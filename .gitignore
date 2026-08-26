@@ -1,0 +1,8 @@
+# Ignore build artifacts and dependencies for the Moodle Class Builder app
+node_modules
+dist
+dist-ssr
+*.local
+coverage
+.vite
+.DS_Store
