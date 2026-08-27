@@ -1,4 +1,4 @@
-export type FieldType = "text" | "textarea" | "url" | "date" | "list";
+export type FieldType = "text" | "textarea" | "url" | "date" | "list" | "image";
 
 export type TemplateValue = string | string[];
 
@@ -21,5 +21,9 @@ export interface TemplateDefinition {
   description: string;
   icon: string;
   fields: FieldDefinition[];
-  generateHtml: (values: TemplateValues) => string;
+  generateHtml: (
+    values: TemplateValues,
+    accent?: string,
+    images?: Record<string, string>,
+  ) => string;
 }

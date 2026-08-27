@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import type { TemplateValue, TemplateValues } from "./types/template";
 import { getTemplateById, templates } from "./templates";
-import { getList, getText, isValidUrl } from "./utils/htmlGenerator";
+import { getList, getText, isValidUrl, sanitizeImageSrc } from "./utils/htmlGenerator";
 import { copyText } from "./utils/clipboard";
 import { downloadHtml } from "./utils/download";
 import { htmlToText } from "./utils/htmlToText";
 import {
   clearDraft,
+  getAccent,
   getDraft,
+  getImages,
   getLastTemplateId,
+  saveAccent,
   saveDraft,
+  saveImages,
   saveLastTemplateId,
+  type ImageStore,
 } from "./utils/storage";
 import { Header } from "./components/Header/Header";
 import { TemplateSelector } from "./components/TemplateSelector/TemplateSelector";
@@ -53,6 +58,9 @@ function validate(
     if (text && field.type === "url" && !isValidUrl(text)) {
       errors[field.id] = "La URL no es válida.";
     }
+    if (text && field.type === "image" && !sanitizeImageSrc(text)) {
+      errors[field.id] = "La imagen no es válida (usá una URL o un archivo de imagen).";
+    }
   }
 
   return errors;
@@ -69,6 +77,14 @@ export default function App() {
   });
   const [previewVisible, setPreviewVisible] = useState(true);
   const [status, setStatus] = useState("");
+  const [accent, setAccent] = useState<string>(() => {
+    const last = getLastTemplateId();
+    return (last && getAccent(last)) || "#4f46e5";
+  });
+  const [images, setImages] = useState<ImageStore>(() => {
+    const last = getLastTemplateId();
+    return (last && getImages(last)) || {};
+  });
 
   const template = useMemo(() => getTemplateById(selectedId), [selectedId]);
 
@@ -76,18 +92,27 @@ export default function App() {
     if (selectedId) {
       saveLastTemplateId(selectedId);
       saveDraft(selectedId, values);
+      saveImages(selectedId, images);
     }
-  }, [selectedId, values]);
+  }, [selectedId, values, images]);
 
   const generatedHtml = useMemo(
-    () => (template ? template.generateHtml(values) : ""),
-    [template, values],
+    () => (template ? template.generateHtml(values, accent, images) : ""),
+    [template, values, accent, images],
   );
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
     setValues(getDraft(id) ?? emptyValues());
+    setAccent(getAccent(id) || "#4f46e5");
+    setImages(getImages(id) || {});
     setStatus("");
+  };
+
+  const handleImageAdded = (dataUri: string): string => {
+    const id = `img_${Math.random().toString(36).slice(2, 9)}`;
+    setImages((prev) => ({ ...prev, [id]: dataUri }));
+    return id;
   };
 
   const handleChange = (id: string, value: TemplateValue) => {
@@ -154,17 +179,46 @@ export default function App() {
                 setStatus("");
               }}
               className="mb-4 text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
-            >
-              ← Cambiar de plantilla
-            </button>
+              >
+                ← Cambiar de plantilla
+              </button>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <label htmlFor="accent" className="text-sm font-medium text-gray-700">
+                  Color de acento
+                </label>
+                <input
+                  id="accent"
+                  type="color"
+                  value={accent}
+                  onChange={(e) => {
+                    setAccent(e.target.value);
+                    if (selectedId) saveAccent(selectedId, e.target.value);
+                  }}
+                  className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                />
+                <div className="flex gap-2">
+                  {ACCENT_PRESETS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setAccent(c)}
+                      className="h-7 w-7 rounded-full border border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                      style={{ background: c }}
+                      aria-label={`Usar color ${c}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
               <section aria-label="Formulario" className="bg-white border border-gray-200 rounded-xl p-5">
                 <TemplateForm
                   template={template}
                   values={values}
                   errors={errors}
                   onChange={handleChange}
+                  onImageAdded={handleImageAdded}
                 />
               </section>
 
@@ -212,6 +266,17 @@ export default function App() {
     </div>
   );
 }
+
+const ACCENT_PRESETS = [
+  "#4f46e5",
+  "#0ea5e9",
+  "#059669",
+  "#d97706",
+  "#dc2626",
+  "#db2777",
+  "#7c3aed",
+  "#0d9488",
+];
 
 const srOnlyStyle: React.CSSProperties = {
   position: "absolute",

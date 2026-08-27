@@ -52,4 +52,18 @@ describe("theoreticalClass template", () => {
     });
     expect(validateGeneratedHtml(html).valid).toBe(true);
   });
+
+  it("renders the cover image when provided", () => {
+    const html = theoreticalClass.generateHtml({
+      title: "Tema",
+      portada: "https://x.com/cover.png",
+    });
+    expect(html).toContain("<img");
+    expect(html).toContain("https://x.com/cover.png");
+  });
+
+  it("omits the cover image when not provided", () => {
+    const html = theoreticalClass.generateHtml({ title: "Tema" });
+    expect(html).not.toContain("<img");
+  });
 });

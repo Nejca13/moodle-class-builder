@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   buildList,
   escapeHtml,
+  formatText,
   getList,
   getText,
   isValidUrl,
+  sanitizeImageSrc,
   sanitizeUrl,
   validateGeneratedHtml,
 } from "../utils/htmlGenerator";
@@ -43,6 +45,45 @@ describe("getList / getText", () => {
     expect(getText("hola")).toBe("hola");
     expect(getText(["a", "b"])).toBe("a b");
     expect(getText(undefined)).toBe("");
+  });
+});
+
+describe("sanitizeImageSrc", () => {
+  it("accepts http/https urls and raster data URIs", () => {
+    expect(sanitizeImageSrc("https://x.com/a.png")).toBe("https://x.com/a.png");
+    expect(sanitizeImageSrc("data:image/png;base64,iVBOR")).toBe(
+      "data:image/png;base64,iVBOR",
+    );
+  });
+
+  it("rejects empty, svg, scripts and arbitrary data URIs", () => {
+    expect(sanitizeImageSrc("")).toBeNull();
+    expect(sanitizeImageSrc("data:image/svg+xml;base64,xyz")).toBeNull();
+    expect(sanitizeImageSrc("javascript:alert(1)")).toBeNull();
+    expect(sanitizeImageSrc("data:text/html,<script>")).toBeNull();
+  });
+});
+
+describe("formatText inline images", () => {
+  it("turns [[imagen:...]] tokens into safe <img> tags", () => {
+    const html = formatText("Texto\n\n[[imagen:https://x.com/a.png|Una foto]]");
+    expect(html).toContain("<img");
+    expect(html).toContain('src="https://x.com/a.png"');
+    expect(html).toContain('alt="Una foto"');
+  });
+
+  it("drops tokens with an invalid source", () => {
+    const html = formatText("Texto [[imagen:javascript:alert(1)]]");
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain("javascript:");
+  });
+
+  it("resolves a stored image id to its data URI", () => {
+    const html = formatText("[[imagen:img_1|Foto]]", {
+      img_1: "data:image/png;base64,AAA",
+    });
+    expect(html).toContain('src="data:image/png;base64,AAA"');
+    expect(html).toContain('alt="Foto"');
   });
 });
 
@@ -97,5 +138,17 @@ describe("validateGeneratedHtml", () => {
   it("accepts safe self-contained html", () => {
     const safe = '<div><h2>Título</h2><p>Texto</p><ul><li>a</li></ul></div>';
     expect(validateGeneratedHtml(safe).valid).toBe(true);
+  });
+
+  it("accepts image data URIs", () => {
+    const ok = '<div><img src="data:image/png;base64,iVBOR" alt="x"></div>';
+    expect(validateGeneratedHtml(ok).valid).toBe(true);
+  });
+
+  it("rejects non-image data URIs", () => {
+    const bad = '<div><iframe src="data:text/html,<script>1</script>"></iframe></div>';
+    const r = validateGeneratedHtml(bad);
+    expect(r.valid).toBe(false);
+    expect(r.errors.join()).toContain("data:");
   });
 });
