@@ -23,6 +23,7 @@ import { TemplateForm } from "./components/TemplateForm/TemplateForm";
 import { Preview } from "./components/Preview/Preview";
 import { ActionBar, HtmlOutput } from "./components/CopyButton/CopyButton";
 import { HelpSection } from "./components/HelpSection/HelpSection";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 function emptyValues(): TemplateValues {
   return {};
@@ -164,55 +165,73 @@ export default function App() {
   const errors = template ? validate(template.id, values) : {};
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen text-slate-900 flex flex-col selection:bg-indigo-500 selection:text-white">
       <Header />
 
-      <main>
+      <main className="flex-1">
         {!template ? (
           <TemplateSelector templates={templates} onSelect={handleSelect} />
         ) : (
-          <div className="max-w-6xl mx-auto px-4 py-6">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedId(null);
-                setStatus("");
-              }}
-              className="mb-4 text-sm text-blue-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fade-in">
+            {/* Top Bar: Back button + Accent Color Picker */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-4 shadow-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedId(null);
+                  setStatus("");
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition cursor-pointer"
               >
-                ← Cambiar de plantilla
+                <ArrowLeft className="w-4 h-4" />
+                <span>Cambiar de plantilla</span>
               </button>
 
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <label htmlFor="accent" className="text-sm font-medium text-gray-700">
+              <div className="flex flex-wrap items-center gap-3">
+                <label htmlFor="accent" className="text-xs sm:text-sm font-semibold text-slate-700">
                   Color de acento
                 </label>
-                <input
-                  id="accent"
-                  type="color"
-                  value={accent}
-                  onChange={(e) => {
-                    setAccent(e.target.value);
-                    if (selectedId) saveAccent(selectedId, e.target.value);
-                  }}
-                  className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
-                />
-                <div className="flex gap-2">
+                <div className="relative flex items-center">
+                  <input
+                    id="accent"
+                    type="color"
+                    value={accent}
+                    onChange={(e) => {
+                      setAccent(e.target.value);
+                      if (selectedId) saveAccent(selectedId, e.target.value);
+                    }}
+                    className="h-8 w-10 cursor-pointer rounded-lg border border-slate-300 bg-white p-0.5 shadow-xs"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
                   {ACCENT_PRESETS.map((c) => (
                     <button
                       key={c}
                       type="button"
-                      onClick={() => setAccent(c)}
-                      className="h-7 w-7 rounded-full border border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                      onClick={() => {
+                        setAccent(c);
+                        if (selectedId) saveAccent(selectedId, c);
+                      }}
+                      className={`h-6 w-6 rounded-full border border-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-transform ${
+                        accent.toLowerCase() === c.toLowerCase()
+                          ? "scale-125 ring-2 ring-indigo-500 ring-offset-2"
+                          : "hover:scale-110 shadow-xs"
+                      }`}
                       style={{ background: c }}
                       aria-label={`Usar color ${c}`}
                     />
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="grid gap-6 lg:grid-cols-2">
-              <section aria-label="Formulario" className="bg-white border border-gray-200 rounded-xl p-5">
+            {/* 2-Column Split: Form + Live Preview */}
+            <div className="grid gap-6 lg:grid-cols-12 items-start">
+              {/* Form Section */}
+              <section
+                aria-label="Formulario"
+                className="lg:col-span-6 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm"
+              >
                 <TemplateForm
                   template={template}
                   values={values}
@@ -222,7 +241,11 @@ export default function App() {
                 />
               </section>
 
-              <section aria-label="Previsualización" className="bg-white border border-gray-200 rounded-xl p-5">
+              {/* Preview Section */}
+              <section
+                aria-label="Previsualización"
+                className="lg:col-span-6 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm sticky top-20"
+              >
                 <ActionBar
                   onCopyHtml={handleCopyHtml}
                   onCopyText={handleCopyText}
@@ -243,8 +266,8 @@ export default function App() {
         <HelpSection />
       </main>
 
-      <footer className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-400">
-        Aplicación estática. Tu contenido no sale de este navegador.
+      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400 font-medium">
+        <p>Moodle Class Builder · Generador de contenido educativo compatible con Moodle TinyMCE</p>
       </footer>
 
       <div
@@ -257,10 +280,11 @@ export default function App() {
       </div>
       {status && (
         <div
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white text-xs sm:text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl border border-slate-700/60 flex items-center gap-2 z-50 animate-fade-in"
           aria-hidden="true"
         >
-          {status}
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{status}</span>
         </div>
       )}
     </div>

@@ -14,7 +14,7 @@ export const theoreticalClass: TemplateDefinition = {
   id: "theoretical-class",
   name: "Clase teórica",
   description: "Crear una explicación estructurada de un tema.",
-  icon: "📚",
+  icon: "BookOpen",
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Introducción a Python" },
     { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },

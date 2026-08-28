@@ -14,7 +14,7 @@ export const practicalActivity: TemplateDefinition = {
   id: "practical-activity",
   name: "Actividad",
   description: "Crear una consigna o trabajo práctico.",
-  icon: "📝",
+  icon: "FileText",
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: API REST con FastAPI" },
     { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
@@ -41,7 +41,7 @@ export const practicalActivity: TemplateDefinition = {
     if (due) {
       inner += section(
         "Fecha límite",
-        `<p style="margin: 0 0 12px; display: inline-block; padding: 8px 16px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; font-weight: 700;">📅 ${due}</p>`,
+        `<p style="margin: 0 0 14px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 10px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.12);"><svg style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>${due}</span></p>`,
         accent,
       );
     }

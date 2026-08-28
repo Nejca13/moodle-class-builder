@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { FieldDefinition, TemplateDefinition, TemplateValue, TemplateValues } from "../../types/template";
 import { getList, getText } from "../../utils/htmlGenerator";
 import { ListEditor } from "../ListEditor/ListEditor";
+import { BookOpen, FileText, GraduationCap, Layers, Image as ImageIcon, AlertCircle, X, Check } from "lucide-react";
 
 interface TemplateFormProps {
   template: TemplateDefinition;
@@ -11,23 +12,46 @@ interface TemplateFormProps {
   onImageAdded: (dataUri: string) => string;
 }
 
+function renderTemplateIcon(icon: string) {
+  switch (icon) {
+    case "BookOpen":
+      return <BookOpen className="w-5 h-5 text-indigo-600" />;
+    case "FileText":
+      return <FileText className="w-5 h-5 text-indigo-600" />;
+    case "GraduationCap":
+      return <GraduationCap className="w-5 h-5 text-indigo-600" />;
+    default:
+      return <Layers className="w-5 h-5 text-indigo-600" />;
+  }
+}
+
 function FieldError({ field, errors }: { field: FieldDefinition; errors: Record<string, string> }) {
   const error = errors[field.id];
   if (!error) return null;
   return (
-    <p id={`${field.id}-error`} className="mt-1 text-sm text-red-600">
-      {error}
+    <p id={`${field.id}-error`} className="mt-1.5 text-xs font-semibold text-rose-600 flex items-center gap-1.5">
+      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+      <span>{error}</span>
     </p>
   );
 }
 
 export function TemplateForm({ template, values, errors, onChange, onImageAdded }: TemplateFormProps) {
   return (
-    <form className="space-y-5" aria-labelledby="form-heading" onSubmit={(e) => e.preventDefault()}>
-      <h2 id="form-heading" className="text-lg font-semibold text-gray-900">
-        {template.icon} {template.name}
-      </h2>
-      <p className="text-sm text-gray-500">{template.description}</p>
+    <form className="space-y-6" aria-labelledby="form-heading" onSubmit={(e) => e.preventDefault()}>
+      <div className="border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-xs">
+            {renderTemplateIcon(template.icon)}
+          </div>
+          <div>
+            <h2 id="form-heading" className="text-xl font-bold text-slate-900 tracking-tight">
+              {template.name}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">{template.description}</p>
+          </div>
+        </div>
+      </div>
 
       {template.fields.map((field) => {
         const error = errors[field.id];
@@ -78,21 +102,20 @@ export function TemplateForm({ template, values, errors, onChange, onImageAdded 
           "aria-invalid": error ? ("true" as const) : undefined,
           "aria-describedby": describedBy,
           className:
-            "w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+            "w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/20 transition duration-150",
         };
 
         return (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="block font-medium text-gray-800 mb-1">
+          <div key={field.id} className="space-y-1">
+            <label htmlFor={field.id} className="block text-sm font-semibold text-slate-700">
               {field.label}
               {field.required && (
-                <span className="text-red-600" aria-hidden="true">
-                  {" "}
+                <span className="text-rose-500 ml-0.5" aria-hidden="true">
                   *
                 </span>
               )}
             </label>
-            {field.help && <p className="text-sm text-gray-500 mb-2">{field.help}</p>}
+            {field.help && <p className="text-xs text-slate-500 mb-1.5 leading-relaxed">{field.help}</p>}
 
             {field.type === "url" ? (
               <input
@@ -148,24 +171,23 @@ function ImageField({
   };
 
   return (
-    <div>
-      <label htmlFor={field.id} className="block font-medium text-gray-800 mb-1">
+    <div className="space-y-1">
+      <label htmlFor={field.id} className="block text-sm font-semibold text-slate-700">
         {field.label}
         {field.required && (
-          <span className="text-red-600" aria-hidden="true">
-            {" "}
+          <span className="text-rose-500 ml-0.5" aria-hidden="true">
             *
           </span>
         )}
       </label>
-      {field.help && <p className="text-sm text-gray-500 mb-2">{field.help}</p>}
+      {field.help && <p className="text-xs text-slate-500 mb-1.5 leading-relaxed">{field.help}</p>}
 
       <input
         id={field.id}
         type="url"
         aria-invalid={error ? ("true" as const) : undefined}
         aria-describedby={describedBy}
-        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/20 transition duration-150"
         value={isData ? "" : value}
         placeholder={field.placeholder ?? "https://... o subí un archivo"}
         onChange={(e) => onChange(field.id, e.target.value)}
@@ -177,7 +199,7 @@ function ImageField({
           type="file"
           accept={IMAGE_ACCEPT}
           aria-label={`Subir imagen para ${field.label}`}
-          className="block text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1 file:text-blue-700 hover:file:bg-blue-100"
+          className="block text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 transition file:cursor-pointer"
           onChange={handleFile}
         />
         {isData && (
@@ -187,7 +209,7 @@ function ImageField({
               if (fileRef.current) fileRef.current.value = "";
               onChange(field.id, "");
             }}
-            className="text-sm text-red-600 hover:underline"
+            className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline transition"
           >
             Quitar
           </button>
@@ -195,11 +217,13 @@ function ImageField({
       </div>
 
       {value && (
-        <img
-          src={value}
-          alt={`Vista previa de ${field.label}`}
-          className="mt-3 max-h-44 rounded-lg border border-gray-200 object-contain"
-        />
+        <div className="mt-3 relative rounded-xl border border-slate-200/80 overflow-hidden bg-slate-50 p-2 max-w-sm">
+          <img
+            src={value}
+            alt={`Vista previa de ${field.label}`}
+            className="max-h-44 rounded-lg object-contain mx-auto"
+          />
+        </div>
       )}
 
       <FieldError field={field} errors={{ [field.id]: error ?? "" }} />
@@ -237,7 +261,7 @@ function RichTextArea({
   };
 
   const insert = () => {
-    let ref_ = data ? onImageAdded(data) : url.trim();
+    const ref_ = data ? onImageAdded(data) : url.trim();
     if (!ref_) return;
     const token = `[[imagen:${ref_}|${alt.trim()}]]`;
     const ta = ref.current;
@@ -258,13 +282,12 @@ function RichTextArea({
   };
 
   return (
-    <div>
+    <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label htmlFor={field.id} className="block font-medium text-gray-800 mb-1">
+        <label htmlFor={field.id} className="block text-sm font-semibold text-slate-700">
           {field.label}
           {field.required && (
-            <span className="text-red-600" aria-hidden="true">
-              {" "}
+            <span className="text-rose-500 ml-0.5" aria-hidden="true">
               *
             </span>
           )}
@@ -272,12 +295,13 @@ function RichTextArea({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline flex items-center gap-1 cursor-pointer"
         >
-          Insertar imagen
+          <ImageIcon className="w-3.5 h-3.5" />
+          <span>Insertar imagen</span>
         </button>
       </div>
-      {field.help && <p className="text-sm text-gray-500 mb-2">{field.help}</p>}
+      {field.help && <p className="text-xs text-slate-500 mb-1.5 leading-relaxed">{field.help}</p>}
 
       <textarea
         ref={ref}
@@ -285,32 +309,48 @@ function RichTextArea({
         rows={5}
         aria-invalid={error ? ("true" as const) : undefined}
         aria-describedby={describedBy}
-        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/20 transition duration-150 leading-relaxed font-sans"
         value={value}
         placeholder={field.placeholder}
         onChange={(e) => onChange(field.id, e.target.value)}
       />
 
       {open && (
-        <div className="mt-2 space-y-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+        <div className="mt-2 space-y-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Insertar imagen en texto</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-slate-400 hover:text-slate-600 text-xs p-1"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <input
             type="url"
             aria-label={`URL de la imagen para ${field.label}`}
-            placeholder="https://... (o subí un archivo)"
+            placeholder="https://... (o subí un archivo abajo)"
             value={url}
             disabled={!!data}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <input
             type="file"
             accept={IMAGE_ACCEPT}
             aria-label={`Subir imagen para ${field.label}`}
-            className="block text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1 file:text-blue-700 hover:file:bg-blue-100"
+            className="block text-xs text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-indigo-800 hover:file:bg-indigo-200 file:cursor-pointer"
             onChange={handleFile}
           />
           {data && (
-            <p className="text-xs text-gray-500">Archivo cargado (se incrustará como base64).</p>
+            <p className="text-xs font-medium text-indigo-700 flex items-center gap-1">
+              <Check className="w-3 h-3 text-emerald-600" />
+              <span>Archivo cargado (se incrustará como base64).</span>
+            </p>
           )}
           <input
             type="text"
@@ -318,20 +358,20 @@ function RichTextArea({
             placeholder="Texto alternativo (opcional)"
             value={alt}
             onChange={(e) => setAlt(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-1">
             <button
               type="button"
               onClick={insert}
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 shadow-xs transition cursor-pointer"
             >
               Insertar
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:underline"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60 transition cursor-pointer"
             >
               Cancelar
             </button>

@@ -150,7 +150,7 @@ function renderInline(raw: string, images?: Record<string, string>): string {
     const src = resolved ?? sanitizeImageSrc(ref);
     if (src) {
       const alt = escapeHtml(m[2] ? m[2].trim() : "");
-      result += `<img src="${src}" alt="${alt}" style="display: block; max-width: 100%; height: auto; border-radius: 10px; margin: 12px 0; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);">`;
+      result += `<img src="${src}" alt="${alt}" style="display: block; max-width: 100%; height: auto; border-radius: 12px; margin: 16px 0; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09); border: 1px solid rgba(0,0,0,0.06);">`;
     }
     last = m.index + m[0].length;
   }
@@ -171,7 +171,7 @@ export function formatText(text: string, images?: Record<string, string>): strin
     .split(/\n{2,}/)
     .map(
       (block) =>
-        `    <p style="margin: 0 0 14px; color: #374151;">${renderInline(block, images ?? activeImages)}</p>`,
+        `    <p style="margin: 0 0 16px; color: #374151; font-size: 1.02rem; line-height: 1.8;">${renderInline(block, images ?? activeImages)}</p>`,
     )
     .join("\n");
 }
@@ -185,12 +185,12 @@ export function buildList(items: string[], ordered = false, accent?: string): st
   const lis = filtered
     .map((i, idx) => {
       if (ordered) {
-        return `      <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;"><span style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); color: ${theme.onAccent}; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px;">${idx + 1}</span><span style="color: #374151;">${escapeHtml(i)}</span></li>`;
+        return `      <li style="display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; padding: 10px 14px; background: #f9fafb; border-radius: 10px; border-left: 3px solid ${theme.primary};"><span style="flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); color: ${theme.onAccent}; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px ${theme.primary}40;">${idx + 1}</span><span style="color: #374151; line-height: 1.6; font-size: 0.98rem; padding-top: 2px;">${escapeHtml(i)}</span></li>`;
       }
-      return `      <li style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px;"><span style="flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: ${theme.marker}; margin-top: 9px;"></span><span style="color: #374151;">${escapeHtml(i)}</span></li>`;
+      return `      <li style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; padding: 8px 12px; background: #fafafa; border-radius: 8px;"><span style="flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: ${theme.marker}; margin-top: 8px; box-shadow: 0 0 0 3px ${theme.tint};"></span><span style="color: #374151; line-height: 1.6; font-size: 0.98rem;">${escapeHtml(i)}</span></li>`;
     })
     .join("\n");
-  return `    <${tag} style="margin: 0 0 14px; padding: 0; list-style: none;">\n${lis}\n    </${tag}>`;
+  return `    <${tag} style="margin: 0 0 16px; padding: 0; list-style: none;">\n${lis}\n    </${tag}>`;
 }
 
 /** Builds a list of links from URL items, or "" when there are none. */
@@ -205,10 +205,10 @@ export function buildUrlList(items: string[], accent?: string): string {
   const lis = links
     .map(
       (u) =>
-        `      <li style="margin-bottom: 10px;"><a href="${u}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 8px 16px; background: ${theme.tint}; color: ${theme.linkText}; border: 1px solid ${theme.tintBorder}; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; word-break: break-all;">🔗 ${u}</a></li>`,
+        `      <li style="margin-bottom: 10px;"><a href="${u}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: ${theme.tint}; color: ${theme.linkText}; border: 1px solid ${theme.tintBorder}; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem; word-break: break-all; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><svg style="display:inline-block; vertical-align:middle; width:15px; height:15px; margin-right:4px; flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>${u}</span></a></li>`,
     )
     .join("\n");
-  return `    <ul style="margin: 0 0 14px; padding: 0; list-style: none;">\n${lis}\n    </ul>`;
+  return `    <ul style="margin: 0 0 16px; padding: 0; list-style: none;">\n${lis}\n    </ul>`;
 }
 
 /** Builds a single link from a URL value, or "" when empty/invalid. */
@@ -216,7 +216,7 @@ export function buildUrlLink(value: string, label: string, accent?: string): str
   const url = sanitizeUrl(value);
   if (!url) return "";
   const theme = resolveTheme(accent);
-  return `  <p style="margin: 0 0 14px;"><a href="${url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 18px; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); color: ${theme.onAccent}; border-radius: 10px; text-decoration: none; font-weight: 700; box-shadow: 0 4px 12px ${theme.primary}4d;">▶ ${escapeHtml(label)}</a></p>`;
+  return `  <p style="margin: 0 0 16px;"><a href="${url}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); color: ${theme.onAccent}; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 14px ${theme.primary}4d; letter-spacing: 0.01em;"><svg style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:4px;" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>${escapeHtml(label)}</span></a></p>`;
 }
 
 /**
@@ -238,7 +238,7 @@ export function buildImage(src: string, alt = "", accent?: string): string {
   if (!safe) return "";
   const a = escapeHtml(alt || "");
   void accent;
-  return `  <p style="margin: 0 0 16px;"><img src="${safe}" alt="${a}" style="display: block; max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);"></p>`;
+  return `  <p style="margin: 0 0 18px;"><img src="${safe}" alt="${a}" style="display: block; max-width: 100%; height: auto; border-radius: 14px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); border: 1px solid #e5e7eb;"></p>`;
 }
 
 /** Wraps a heading + body (already-generated HTML) into a labeled section. */
@@ -246,7 +246,7 @@ export function section(heading: string, body: string, accent?: string): string 
   const cleanBody = body.trim();
   if (!cleanBody) return "";
   const theme = resolveTheme(accent);
-  return `  <section style="margin: 28px 0;">\n    <h3 style="display: inline-block; margin: 0 0 14px; padding: 6px 14px; font-size: 1.05rem; font-weight: 700; color: ${theme.onAccent}; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); border-radius: 999px; box-shadow: 0 4px 12px ${theme.primary}40;">${escapeHtml(heading)}</h3>\n${body}\n  </section>`;
+  return `  <section style="margin: 32px 0 24px;">\n    <div style="display: flex; align-items: center; margin: 0 0 16px;"><h3 style="display: inline-block; margin: 0; padding: 7px 18px; font-size: 1.05rem; font-weight: 700; color: ${theme.onAccent}; background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); border-radius: 9999px; box-shadow: 0 4px 14px ${theme.primary}38; letter-spacing: 0.01em;">${escapeHtml(heading)}</h3><div style="flex: 1; height: 1px; background: linear-gradient(to right, ${theme.tintBorder}, transparent); margin-left: 14px;"></div></div>\n${body}\n  </section>`;
 }
 
 /** Builds the header "card" with title, optional subtitle, and optional cover image. */
@@ -260,19 +260,19 @@ export function headerCard(
   const theme = resolveTheme(accent);
   const safeCover = sanitizeImageSrc(cover ?? "");
   const coverHtml = safeCover
-    ? `<img src="${safeCover}" alt="${escapeHtml(coverAlt)}" style="display: block; width: 100%; height: 180px; object-fit: cover; border-radius: 14px 14px 0 0;">`
+    ? `<img src="${safeCover}" alt="${escapeHtml(coverAlt)}" style="display: block; width: 100%; height: 210px; object-fit: cover; border-radius: 16px 16px 0 0;">`
     : "";
-  const t = `<h2 style="margin: 0 0 8px; font-size: 1.7rem; font-weight: 700; color: ${theme.onAccent}; letter-spacing: -0.01em;">${escapeHtml(title)}</h2>`;
+  const t = `<h2 style="margin: 0 0 8px; font-size: 1.85rem; font-weight: 800; color: ${theme.onAccent}; letter-spacing: -0.02em; line-height: 1.25;">${escapeHtml(title)}</h2>`;
   const s = subtitle
-    ? `<p style="margin: 0; color: ${theme.onAccent}; opacity: 0.9; font-size: 1rem;">${escapeHtml(subtitle)}</p>`
+    ? `<p style="margin: 0; color: ${theme.onAccent}; opacity: 0.92; font-size: 1.05rem; font-weight: 400; line-height: 1.5;">${escapeHtml(subtitle)}</p>`
     : "";
-  const body = `    <div style="background: linear-gradient(135deg, ${theme.primary}, ${theme.gradientTo}); padding: 26px 28px;">\n      ${t}\n      ${s}\n    </div>`;
-  return `  <div style="border-radius: 14px; overflow: hidden; margin-bottom: 28px; box-shadow: 0 8px 20px ${theme.primary}40;">\n    ${coverHtml}\n${body}\n  </div>`;
+  const body = `    <div style="background: linear-gradient(135deg, ${theme.primary} 0%, ${theme.gradientTo} 100%); padding: 32px 30px; position: relative;">\n      ${t}\n      ${s}\n    </div>`;
+  return `  <div style="border-radius: 16px; overflow: hidden; margin-bottom: 32px; box-shadow: 0 10px 25px -5px ${theme.primary}35, 0 8px 10px -6px ${theme.primary}25; border: 1px solid rgba(255, 255, 255, 0.15);">\n    ${coverHtml}\n${body}\n  </div>`;
 }
 
 /** Wraps the full content in a self-contained container <div>. */
 export function wrapContent(inner: string): string {
-  return `<div style="font-family: 'Segoe UI', system-ui, -apple-system, Arial, Helvetica, sans-serif; line-height: 1.7; color: #1f2937; max-width: 820px; margin: 0 auto; padding: 28px 24px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);">\n${inner}\n</div>`;
+  return `<div style="font-family: 'Segoe UI', system-ui, -apple-system, Arial, Helvetica, sans-serif; line-height: 1.75; color: #1f2937; max-width: 820px; margin: 0 auto; padding: 36px 32px 40px; background: #ffffff; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 24px 48px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">\n${inner}\n</div>`;
 }
 
 export interface ValidationResult {

@@ -16,7 +16,7 @@ export const educationalResource: TemplateDefinition = {
   id: "educational-resource",
   name: "Material educativo",
   description: "Crear un recurso de estudio con lecturas, videos y enlaces.",
-  icon: "📖",
+  icon: "GraduationCap",
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Guía de redes IoT" },
     { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
