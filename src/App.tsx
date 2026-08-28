@@ -266,8 +266,28 @@ export default function App() {
         <HelpSection />
       </main>
 
-      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400 font-medium">
+      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500 font-medium space-y-2">
         <p>Moodle Class Builder · Generador de contenido educativo compatible con Moodle TinyMCE</p>
+        <p className="flex items-center justify-center gap-1.5 text-slate-600">
+          <span>Powered by</span>
+          <a
+            href="https://nejca.com.ar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-indigo-600 hover:text-indigo-500 hover:underline transition"
+          >
+            Nejca
+          </a>
+          <span className="text-slate-300">·</span>
+          <a
+            href="https://nejca.com.ar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-slate-600 transition"
+          >
+            nejca.com.ar
+          </a>
+        </p>
       </footer>
 
       <div
