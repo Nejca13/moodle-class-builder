@@ -1,4 +1,4 @@
-# Moodle Class Builder
+# Gestor de Clases
 
 Herramienta **estática** y mínima para docentes: elegís una plantilla, completás
 un formulario y obtenés **HTML listo para copiar y pegar en el editor TinyMCE de

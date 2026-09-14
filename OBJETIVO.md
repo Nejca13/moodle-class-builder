@@ -1,4 +1,4 @@
-# Moodle Class Builder — Objetivo y estado
+# Gestor de Clases — Objetivo y estado
 
 Aplicación **web estática** para docentes: elegís una plantilla, completás un
 formulario y obtenés **HTML listo para copiar y pegar en el editor TinyMCE de

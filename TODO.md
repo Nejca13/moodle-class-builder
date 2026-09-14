@@ -1,4 +1,4 @@
-# TODO — Moodle Class Builder
+# TODO — Gestor de Clases
 
 Estado: **implementación completa y verificada** (build + lint + 45 tests OK).
 Este archivo es para retomar rápido desde otra PC.

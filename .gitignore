@@ -1,4 +1,4 @@
-# Ignore build artifacts and dependencies for the Moodle Class Builder app
+# Ignore build artifacts and dependencies for the Gestor de Clases app
 node_modules
 dist
 dist-ssr

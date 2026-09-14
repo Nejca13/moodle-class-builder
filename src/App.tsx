@@ -286,7 +286,7 @@ export default function App() {
 
       <footer className='max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500 font-medium space-y-2'>
         <p>
-          Moodle Class Builder · Generador de contenido educativo compatible con
+          Gestor de Clases · Generador de contenido educativo compatible con
           Moodle TinyMCE
         </p>
         <p className='flex items-center justify-center gap-1.5 text-slate-600'>
