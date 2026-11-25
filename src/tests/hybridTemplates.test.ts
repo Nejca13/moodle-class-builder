@@ -7,7 +7,7 @@ import { synchronousMeeting } from "../templates/synchronousMeeting";
 import { courseRoadmap } from "../templates/courseRoadmap";
 import { AI_LEVELS, AI_PROTOCOL } from "../templates/hybrid";
 import { validateGeneratedHtml } from "../utils/htmlGenerator";
-import { EXAMPLES } from "../examples";
+import { EXAMPLE_ACCENTS, EXAMPLES } from "../examples";
 import roadmapExampleHtml from "../../tests/moodle/roadmap-example.html?raw";
 
 describe("marco de educación híbrida en las plantillas", () => {
@@ -149,6 +149,15 @@ describe("marco de educación híbrida en las plantillas", () => {
     expect(validateGeneratedHtml(html).valid).toBe(true);
   });
 
+  it("cada ejemplo tiene foto libre y un color propio", () => {
+    const colors = templates.map((t) => EXAMPLE_ACCENTS[t.id]);
+    expect(new Set(colors).size).toBe(templates.length);
+    for (const t of templates) {
+      expect(String(EXAMPLES[t.id].portada), t.id).toMatch(/^https:\/\/thumb\.wikimedia\.org\//);
+      expect(t.generateHtml(EXAMPLES[t.id], EXAMPLE_ACCENTS[t.id]), t.id).toContain(EXAMPLE_ACCENTS[t.id]);
+    }
+  });
+
   it("hay un ejemplo válido para cada plantilla", () => {
     for (const t of templates) {
       expect(EXAMPLES[t.id], t.id).toBeDefined();
@@ -159,6 +168,8 @@ describe("marco de educación híbrida en las plantillas", () => {
 
   it("el ejemplo de bienvenida coincide con el HTML guardado en tests/moodle", () => {
     const norm = (h: string) => h.replace(/\s+/g, " ").trim();
-    expect(norm(courseRoadmap.generateHtml(EXAMPLES["course-roadmap"]))).toBe(norm(roadmapExampleHtml));
+    expect(
+      norm(courseRoadmap.generateHtml(EXAMPLES["course-roadmap"], EXAMPLE_ACCENTS["course-roadmap"])),
+    ).toBe(norm(roadmapExampleHtml));
   });
 });

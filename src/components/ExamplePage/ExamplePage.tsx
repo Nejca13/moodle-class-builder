@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { TemplateDefinition } from "../../types/template";
-import { EXAMPLES } from "../../examples";
+import { EXAMPLE_ACCENTS, EXAMPLES } from "../../examples";
 import { Preview } from "../Preview/Preview";
 import { ScenarioTag, TemplateIcon } from "../TemplateIcon/TemplateIcon";
 
@@ -12,7 +12,10 @@ interface ExamplePageProps {
 
 /** Página de ejemplo de una plantilla (se abre con `?ejemplo=<id>`). */
 export function ExamplePage({ template, onUseTemplate }: ExamplePageProps) {
-  const html = useMemo(() => template.generateHtml(EXAMPLES[template.id]), [template]);
+  const html = useMemo(
+    () => template.generateHtml(EXAMPLES[template.id], EXAMPLE_ACCENTS[template.id]),
+    [template],
+  );
 
   return (
     <section aria-labelledby="example-heading" className="mx-auto max-w-5xl px-4 py-8 sm:px-6 animate-fade-in">

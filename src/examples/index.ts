@@ -2,6 +2,40 @@ import type { TemplateValues } from "../types/template";
 import { AI_LEVELS } from "../templates/hybrid";
 
 /**
+ * Fotos de Wikimedia Commons en dominio público o CC0 (no requieren
+ * atribución). Fuente de cada una al lado.
+ */
+const PHOTOS = {
+  // https://commons.wikimedia.org/wiki/File:Kittens_resting_close_together_for_warmth_and_security.jpg (CC0)
+  kittensResting:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Kittens_resting_close_together_for_warmth_and_security.jpg/1280px-Kittens_resting_close_together_for_warmth_and_security.jpg",
+  // https://commons.wikimedia.org/wiki/File:Los_Canarios,_restaurant_cat_on_wall.jpg (CC0)
+  catOnWall:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Los_Canarios%2C_restaurant_cat_on_wall.jpg/1280px-Los_Canarios%2C_restaurant_cat_on_wall.jpg",
+  // https://commons.wikimedia.org/wiki/File:A_kitten_in_the_hand_(Flickr).jpg (CC0)
+  kittenInHand:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/A_kitten_in_the_hand_%28Flickr%29.jpg/1280px-A_kitten_in_the_hand_%28Flickr%29.jpg",
+  // https://commons.wikimedia.org/wiki/File:Kitten_sleeping.jpg (CC0)
+  kittenSleeping:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Kitten_sleeping.jpg/1280px-Kitten_sleeping.jpg",
+  // https://commons.wikimedia.org/wiki/File:A_cat_pauses_over_a_bowl_of_food,_2011.jpg (dominio público)
+  catFoodBowl:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/A_cat_pauses_over_a_bowl_of_food%2C_2011.jpg/1280px-A_cat_pauses_over_a_bowl_of_food%2C_2011.jpg",
+  // https://commons.wikimedia.org/wiki/File:Stray_garden_cat_eating_%27Cat_food%27.JPG (CC0)
+  catEatingGarden:
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Stray_garden_cat_eating_%27Cat_food%27.JPG/1280px-Stray_garden_cat_eating_%27Cat_food%27.JPG",
+};
+
+/** Color de acento de cada ejemplo, para mostrar que el color es configurable. */
+export const EXAMPLE_ACCENTS: Record<string, string> = {
+  "course-roadmap": "#23685c", // verde pizarrón
+  "theoretical-class": "#2b5ba3", // azul
+  "synchronous-meeting": "#6a4a8c", // violeta
+  "practical-activity": "#a4492a", // terracota
+  "educational-resource": "#b45309", // ámbar
+};
+
+/**
  * Ejemplos completos de cada plantilla, todos de la misma materia de prueba
  * ("Gatitos #1"). Son datos, no HTML: se generan con la plantilla en cada
  * render, así siempre reflejan el diseño actual.
@@ -9,8 +43,7 @@ import { AI_LEVELS } from "../templates/hybrid";
 export const EXAMPLES: Record<string, TemplateValues> = {
   "course-roadmap": {
     title: "Gatitos #1 — Cuidado felino básico",
-    portada:
-      "https://media.istockphoto.com/id/1247823540/es/vector/conjunto-de-gatitos-para-beb%C3%A9s-diminutos.jpg?s=612x612&w=0&k=20&c=T7TMljca4dU0tBWNdykYrQEU0TMYAn1BQse6z6ShwqI=",
+    portada: PHOTOS.kittensResting,
     teachers: "Contreras Nicolás",
     pedagogicalFormat: "Taller",
     welcome:
@@ -55,6 +88,7 @@ export const EXAMPLES: Record<string, TemplateValues> = {
 
   "theoretical-class": {
     title: "Clase 3: El lenguaje corporal felino",
+    portada: PHOTOS.catOnWall,
     scenario: "Presencialidad física",
     estimatedTime: "80 minutos",
     purpose:
@@ -86,6 +120,7 @@ export const EXAMPLES: Record<string, TemplateValues> = {
 
   "synchronous-meeting": {
     title: "Encuentro: ¿Qué nos dice la cola?",
+    portada: PHOTOS.kittenInHand,
     format: "Intercambio y socialización",
     schedule: "Jueves 19 h",
     duration: "60 minutos",
@@ -116,6 +151,7 @@ export const EXAMPLES: Record<string, TemplateValues> = {
 
   "practical-activity": {
     title: "TP 1: Diario de observación de un gato",
+    portada: PHOTOS.kittenSleeping,
     scenario: "Asincronía (aula virtual)",
     workMode: "Individual",
     estimatedTime: "3 horas en dos semanas",
@@ -150,9 +186,10 @@ export const EXAMPLES: Record<string, TemplateValues> = {
 
   "educational-resource": {
     title: "Guía: Alimentación del gatito en su primer año",
+    portada: PHOTOS.catFoodBowl,
     estimatedTime: "40 minutos",
     description:
-      "Material de lectura para la Unidad 2. Resume qué, cuánto y cada cuánto come un gatito según su edad.",
+      `Material de lectura para la Unidad 2. Resume qué, cuánto y cada cuánto come un gatito según su edad.\n\n[[imagen:${PHOTOS.catEatingGarden}|Gato comiendo alimento balanceado en un jardín]]`,
     readingGuide:
       "Mientras leés, armá una tabla con tres columnas: edad, tipo de alimento y cantidad de comidas por día. La vamos a usar en el plan de cuidado.",
     mainConcepts: [
@@ -167,6 +204,7 @@ export const EXAMPLES: Record<string, TemplateValues> = {
     questions: ["¿Por qué un gatito necesita comer más veces al día que un gato adulto?"],
     accessibility:
       "El video tiene subtítulos en español. La guía también está disponible en formato de texto accesible.",
-    sources: "Material elaborado para Gatitos #1. Licencia CC BY-SA 4.0.",
+    sources:
+      "Material elaborado para Gatitos #1. Licencia CC BY-SA 4.0. Fotos: Wikimedia Commons, dominio público y CC0.",
   },
 };
