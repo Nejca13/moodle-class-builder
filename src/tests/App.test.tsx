@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
 import { copyText } from "../utils/clipboard";
@@ -112,7 +112,7 @@ describe("App integration", () => {
     expect(screen.getByText(/TP 1: Diario de observación de un gato/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Usar esta plantilla/i }));
-    expect(window.location.search).toBe("");
+    expect(window.location.search).toBe("?plantilla=practical-activity");
     expect(screen.getByRole("heading", { name: /^Actividad$/i, level: 2 })).toBeInTheDocument();
     expect(screen.getByLabelText(/Título/i)).toHaveValue("");
   });
@@ -129,7 +129,7 @@ describe("App integration", () => {
     expect(screen.getByLabelText(/Título/i)).toHaveValue("");
   });
 
-  it("persists the selected template and draft in localStorage", async () => {
+  it("puts the selected template in the URL and persists its draft", async () => {
     vi.mocked(copyText).mockClear();
     const user = userEvent.setup();
     render(<App />);
@@ -137,14 +137,23 @@ describe("App integration", () => {
     await user.click(screen.getByRole("button", { name: /Clase teórica/i }));
     await user.type(screen.getByLabelText(/Título/i), "Persistido");
 
-    expect(localStorage.getItem("mcb:lastTemplateId")).toBe("theoretical-class");
+    expect(window.location.search).toBe("?plantilla=theoretical-class");
     const draft = JSON.parse(localStorage.getItem("mcb:draft:theoretical-class") ?? "{}");
     expect(draft.title).toBe("Persistido");
   });
 
-  it("restores the last template and draft on startup", async () => {
-    vi.mocked(copyText).mockClear();
+  it("opens the selector at the root even if a template was used before", () => {
+    // Regression: the app used to jump into the last opened template.
     localStorage.setItem("mcb:lastTemplateId", "practical-activity");
+    localStorage.setItem("mcb:draft:practical-activity", JSON.stringify({ title: "Actividad previa" }));
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: /Elegí una plantilla/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Título/i)).not.toBeInTheDocument();
+  });
+
+  it("restores the draft when the template is opened from the URL", () => {
+    window.history.replaceState(null, "", "/?plantilla=practical-activity");
     localStorage.setItem(
       "mcb:draft:practical-activity",
       JSON.stringify({ title: "Actividad previa", objective: "o", assignment: "c" }),
@@ -152,6 +161,25 @@ describe("App integration", () => {
     render(<App />);
 
     expect(screen.getByLabelText(/Título/i)).toHaveValue("Actividad previa");
+  });
+
+  it("falls back to the selector for an unknown template id", () => {
+    window.history.replaceState(null, "", "/?plantilla=no-existe");
+    render(<App />);
+    expect(screen.getByRole("heading", { name: /Elegí una plantilla/i })).toBeInTheDocument();
+  });
+
+  it("supports the browser back button", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Clase teórica/i }));
+    expect(screen.getByLabelText(/Título/i)).toBeInTheDocument();
+
+    window.history.back();
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /Elegí una plantilla/i })).toBeInTheDocument(),
+    );
   });
 
   it("switches back to the selector and chooses another template", async () => {

@@ -16,11 +16,9 @@ import {
   getAccent,
   getDraft,
   getImages,
-  getLastTemplateId,
   saveAccent,
   saveDraft,
   saveImages,
-  saveLastTemplateId,
   type ImageStore,
 } from './utils/storage'
 import { Header } from './components/Header/Header'
@@ -30,7 +28,7 @@ import { Preview } from './components/Preview/Preview'
 import { ActionBar, HtmlOutput } from './components/CopyButton/CopyButton'
 import { HelpSection } from './components/HelpSection/HelpSection'
 import { ExamplePage } from './components/ExamplePage/ExamplePage'
-import { EXAMPLES } from './examples'
+import { readRoute, routeToSearch, type Route } from './utils/route'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Analytics } from '@vercel/analytics/react'
 
@@ -80,26 +78,22 @@ function validate(
 }
 
 export default function App() {
-  const [selectedId, setSelectedId] = useState<string | null>(() => {
-    const last = getLastTemplateId()
-    return getTemplateById(last) ? last : null
-  })
-  const [values, setValues] = useState<TemplateValues>(() => {
-    const last = getLastTemplateId()
-    return last && getTemplateById(last)
-      ? (getDraft(last) ?? emptyValues())
-      : emptyValues()
-  })
+  // The URL is the source of truth for the current screen.
+  const [route, setRoute] = useState<Route>(() => readRoute(window.location.search))
+  const selectedId = route.view === 'editor' ? route.id : null
+
+  const initialId = selectedId
+  const [values, setValues] = useState<TemplateValues>(
+    () => (initialId && getDraft(initialId)) || emptyValues(),
+  )
   const [previewVisible, setPreviewVisible] = useState(true)
   const [status, setStatus] = useState('')
-  const [accent, setAccent] = useState<string>(() => {
-    const last = getLastTemplateId()
-    return (last && getAccent(last)) || DEFAULT_ACCENT
-  })
-  const [images, setImages] = useState<ImageStore>(() => {
-    const last = getLastTemplateId()
-    return (last && getImages(last)) || {}
-  })
+  const [accent, setAccent] = useState<string>(
+    () => (initialId && getAccent(initialId)) || DEFAULT_ACCENT,
+  )
+  const [images, setImages] = useState<ImageStore>(
+    () => (initialId && getImages(initialId)) || {},
+  )
 
   // Errors are shown only for fields the teacher already edited, or for all
   // fields after a copy/download attempt (validate after interaction).
@@ -107,17 +101,39 @@ export default function App() {
   const [showAllErrors, setShowAllErrors] = useState(false)
 
   const template = useMemo(() => getTemplateById(selectedId), [selectedId])
-
-  // `?ejemplo=<id>` opens the example page of a template (from "Ver ejemplo").
-  const [exampleId, setExampleId] = useState<string | null>(() =>
-    new URLSearchParams(window.location.search).get('ejemplo'),
-  )
   const exampleTemplate =
-    exampleId && EXAMPLES[exampleId] ? getTemplateById(exampleId) : null
+    route.view === 'example' ? getTemplateById(route.id) : null
+
+  /** Loads the saved draft, color and images of a template into the editor. */
+  const loadTemplateState = (id: string) => {
+    setValues(getDraft(id) ?? emptyValues())
+    setTouched(new Set())
+    setShowAllErrors(false)
+    setAccent(getAccent(id) || DEFAULT_ACCENT)
+    setImages(getImages(id) || {})
+    setStatus('')
+  }
+
+  const navigate = (next: Route) => {
+    const url = window.location.pathname + routeToSearch(next)
+    window.history.pushState(null, '', url)
+    setRoute(next)
+    scrollToTop()
+  }
+
+  // Browser back/forward.
+  useEffect(() => {
+    const onPopState = () => {
+      const next = readRoute(window.location.search)
+      if (next.view === 'editor') loadTemplateState(next.id)
+      setRoute(next)
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
 
   useEffect(() => {
     if (selectedId) {
-      saveLastTemplateId(selectedId)
       saveDraft(selectedId, values)
       saveImages(selectedId, images)
     }
@@ -129,14 +145,8 @@ export default function App() {
   )
 
   const handleSelect = (id: string) => {
-    scrollToTop()
-    setSelectedId(id)
-    setValues(getDraft(id) ?? emptyValues())
-    setTouched(new Set())
-    setShowAllErrors(false)
-    setAccent(getAccent(id) || DEFAULT_ACCENT)
-    setImages(getImages(id) || {})
-    setStatus('')
+    loadTemplateState(id)
+    navigate({ view: 'editor', id })
   }
 
   const handleImageAdded = (dataUri: string): string => {
@@ -214,12 +224,7 @@ export default function App() {
         {exampleTemplate ? (
           <ExamplePage
             template={exampleTemplate}
-            onUseTemplate={(id) => {
-              // Leave the example URL so a reload keeps the editor.
-              window.history.replaceState(null, '', window.location.pathname)
-              setExampleId(null)
-              handleSelect(id)
-            }}
+            onUseTemplate={handleSelect}
           />
         ) : !template ? (
           <TemplateSelector templates={templates} onSelect={handleSelect} />
@@ -229,9 +234,8 @@ export default function App() {
               <button
                 type='button'
                 onClick={() => {
-                  scrollToTop()
-                  setSelectedId(null)
                   setStatus('')
+                  navigate({ view: 'selector' })
                 }}
                 className='inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line-strong bg-white px-3.5 py-2 text-base font-semibold text-ink hover:bg-paper-deep'
               >

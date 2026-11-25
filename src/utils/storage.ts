@@ -1,6 +1,5 @@
 import type { TemplateValues } from "../types/template";
 
-const LAST_TEMPLATE_KEY = "mcb:lastTemplateId";
 const DRAFT_PREFIX = "mcb:draft:";
 const ACCENT_PREFIX = "mcb:accent:";
 
@@ -56,22 +55,6 @@ export function clearImages(templateId: string): void {
     localStorage.removeItem(IMAGES_PREFIX + templateId);
   } catch {
     // ignore
-  }
-}
-
-export function saveLastTemplateId(id: string): void {
-  try {
-    localStorage.setItem(LAST_TEMPLATE_KEY, id);
-  } catch {
-    // ignore storage errors (private mode, quota, etc.)
-  }
-}
-
-export function getLastTemplateId(): string | null {
-  try {
-    return localStorage.getItem(LAST_TEMPLATE_KEY);
-  } catch {
-    return null;
   }
 }
 
