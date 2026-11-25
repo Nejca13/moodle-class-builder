@@ -270,6 +270,43 @@ export function headerCard(
   return `  <div style="border-radius: 16px; overflow: hidden; margin-bottom: 32px; box-shadow: 0 10px 25px -5px ${theme.primary}35, 0 8px 10px -6px ${theme.primary}25; border: 1px solid rgba(255, 255, 255, 0.15);">\n    ${coverHtml}\n${body}\n  </div>`;
 }
 
+/**
+ * Builds a row of "label: value" chips (e.g. escenario, tiempo estimado).
+ * Entries with an empty value are skipped; returns "" when none remain.
+ */
+export function metaChips(entries: Array<[string, string]>, accent?: string): string {
+  const filtered = entries
+    .map(([label, value]) => [label, value.trim()] as const)
+    .filter(([, value]) => value.length > 0);
+  if (filtered.length === 0) return "";
+  const theme = resolveTheme(accent);
+  const chips = filtered
+    .map(
+      ([label, value]) =>
+        `<span style="display: inline-block; margin: 0 8px 8px 0; padding: 6px 14px; background: ${theme.tint}; border: 1px solid ${theme.tintBorder}; border-radius: 9999px; font-size: 0.9rem; color: #374151;"><strong style="color: ${theme.linkText};">${escapeHtml(label)}:</strong> ${escapeHtml(value)}</span>`,
+    )
+    .join("");
+  return `  <p style="margin: -12px 0 24px;">${chips}</p>`;
+}
+
+/**
+ * Highlighted box for institutional notices (IA, asistencia, prácticas
+ * profesionalizantes). `body` is already-generated HTML; returns "" when empty.
+ */
+export function notice(
+  heading: string,
+  body: string,
+  tone: "info" | "warning" = "info",
+): string {
+  const cleanBody = body.trim();
+  if (!cleanBody) return "";
+  const palette =
+    tone === "warning"
+      ? { bg: "#fef3c7", border: "#f59e0b", title: "#92400e" }
+      : { bg: "#eff6ff", border: "#3b82f6", title: "#1e3a8a" };
+  return `  <div style="margin: 24px 0; padding: 18px 22px; background: ${palette.bg}; border-left: 5px solid ${palette.border}; border-radius: 12px;">\n    <p style="margin: 0 0 10px; font-weight: 700; color: ${palette.title}; font-size: 1.02rem;">${escapeHtml(heading)}</p>\n${body}\n  </div>`;
+}
+
 /** Wraps the full content in a self-contained container <div>. */
 export function wrapContent(inner: string): string {
   return `<div style="font-family: 'Segoe UI', system-ui, -apple-system, Arial, Helvetica, sans-serif; line-height: 1.75; color: #1f2937; max-width: 820px; margin: 0 auto; padding: 36px 32px 40px; background: #ffffff; border-radius: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 24px 48px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">\n${inner}\n</div>`;

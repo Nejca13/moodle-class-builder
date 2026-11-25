@@ -23,7 +23,9 @@ export const quiz: TemplateDefinition = {
   id: "quiz",                       // único
   name: "Cuestionario",
   description: "Crear preguntas de repaso.",
-  icon: "❓",
+  icon: "FileText",                 // nombre de ícono de lucide (ver TemplateIcon.tsx)
+  group: "aula-virtual",            // "inicio" | "clases" | "aula-virtual"
+  scenarios: ["asincronico"],       // escenarios que muestra la tarjeta
   fields: [
     { id: "title", label: "Título", type: "text", required: true },
     { id: "questions", label: "Preguntas", type: "list", placeholder: "¿...?" },
@@ -52,6 +54,9 @@ export const templates: TemplateDefinition[] = [
 ];
 ```
 
+El selector agrupa las plantillas según `group`, en el orden de `TEMPLATE_GROUPS`
+(inicio de la cursada → clases y encuentros → trabajo en el aula virtual).
+
 ¡Listo! Aparecerá automáticamente en el selector, con formulario, previsualización,
 validación, copia y tests de integración funcionando.
 
@@ -64,6 +69,8 @@ validación, copia y tests de integración funcionando.
 | `url`       | `<input type="url">` (validado)       |
 | `date`      | `<input type="date">`                 |
 | `list`      | editor de lista (botón "Agregar")     |
+| `image`     | URL o archivo de imagen               |
+| `select`    | `<select>` con las opciones de `options` |
 
 Para listas de URLs usá `itemType: "url"`; cada ítem se valida y se renderiza
 como `<a href>`.
@@ -76,5 +83,15 @@ como `<a href>`.
 - `buildUrlList(items)` / `buildUrlLink(value, label)` (enlaces)
 - `section(título, html)` (sección con encabezado)
 - `headerCard(título, subtítulo?)` (tarjeta superior)
+- `metaChips([[etiqueta, valor], ...])` (chips de escenario, tiempo, etc.)
+- `notice(título, html, "info" | "warning")` (recuadro destacado)
 - `wrapContent(html)` (contenedor autocontenido)
 - `validateGeneratedHtml(html)` (reglas de seguridad)
+
+## Criterios de educación híbrida
+
+`src/templates/hybrid.ts` reúne las opciones y bloques compartidos que siguen las
+*Orientaciones pedagógicas para la Educación Híbrida en la Educación Técnica Superior*
+(Río Negro, 2026): escenarios, formatos pedagógicos, formatos de encuentro sincrónico,
+niveles de uso de IA (`aiFields` + `renderAiBlock`) y el aviso de Prácticas
+Profesionalizantes (`renderPPWarning`). Reutilizalos en plantillas nuevas.

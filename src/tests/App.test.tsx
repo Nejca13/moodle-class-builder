@@ -73,6 +73,24 @@ describe("App integration", () => {
     expect(copyText).not.toHaveBeenCalled();
   });
 
+  it("does not show required errors before the teacher interacts", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Clase teórica/i }));
+    expect(screen.queryByText(/Título es obligatorio/i)).not.toBeInTheDocument();
+  });
+
+  it("groups templates by moment of the course", async () => {
+    render(<App />);
+    const groups = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    expect(groups.slice(0, 3)).toEqual([
+      "Inicio de la cursada",
+      "Clases y encuentros",
+      "Trabajo en el aula virtual",
+    ]);
+  });
+
   it("clears the form", async () => {
     vi.mocked(copyText).mockClear();
     const user = userEvent.setup();

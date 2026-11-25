@@ -91,12 +91,17 @@ export default function App() {
   const [status, setStatus] = useState('')
   const [accent, setAccent] = useState<string>(() => {
     const last = getLastTemplateId()
-    return (last && getAccent(last)) || '#4f46e5'
+    return (last && getAccent(last)) || DEFAULT_ACCENT
   })
   const [images, setImages] = useState<ImageStore>(() => {
     const last = getLastTemplateId()
     return (last && getImages(last)) || {}
   })
+
+  // Errors are shown only for fields the teacher already edited, or for all
+  // fields after a copy/download attempt (validate after interaction).
+  const [touched, setTouched] = useState<Set<string>>(() => new Set())
+  const [showAllErrors, setShowAllErrors] = useState(false)
 
   const template = useMemo(() => getTemplateById(selectedId), [selectedId])
 
@@ -114,9 +119,12 @@ export default function App() {
   )
 
   const handleSelect = (id: string) => {
+    scrollToTop()
     setSelectedId(id)
     setValues(getDraft(id) ?? emptyValues())
-    setAccent(getAccent(id) || '#4f46e5')
+    setTouched(new Set())
+    setShowAllErrors(false)
+    setAccent(getAccent(id) || DEFAULT_ACCENT)
     setImages(getImages(id) || {})
     setStatus('')
   }
@@ -129,12 +137,15 @@ export default function App() {
 
   const handleChange = (id: string, value: TemplateValue) => {
     setValues((prev) => ({ ...prev, [id]: value }))
+    setTouched((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))
     if (status) setStatus('')
   }
 
   const handleClear = () => {
     if (selectedId) clearDraft(selectedId)
     setValues(emptyValues())
+    setTouched(new Set())
+    setShowAllErrors(false)
     setStatus('Formulario limpiado.')
   }
 
@@ -142,6 +153,7 @@ export default function App() {
     if (!template) return
     const errors = validate(template.id, values)
     if (Object.keys(errors).length > 0) {
+      setShowAllErrors(true)
       setStatus('Corregí los campos señalados antes de copiar.')
       return
     }
@@ -177,78 +189,45 @@ export default function App() {
     })
   }
 
-  const errors = template ? validate(template.id, values) : {}
+  const allErrors = template ? validate(template.id, values) : {}
+  const errors = showAllErrors
+    ? allErrors
+    : Object.fromEntries(
+        Object.entries(allErrors).filter(([id]) => touched.has(id)),
+      )
 
   return (
-    <div className='min-h-screen text-slate-900 flex flex-col selection:bg-indigo-500 selection:text-white'>
+    <div className='flex min-h-screen flex-col'>
       <Header />
 
       <main className='flex-1'>
         {!template ? (
           <TemplateSelector templates={templates} onSelect={handleSelect} />
         ) : (
-          <div className='max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fade-in'>
-            {/* Top Bar: Back button + Accent Color Picker */}
-            <div className='flex flex-wrap items-center justify-between gap-4 mb-6 bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-4 shadow-xs'>
+          <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 animate-fade-in'>
+            <nav aria-label='Ubicación' className='mb-5 flex flex-wrap items-center gap-3'>
               <button
                 type='button'
                 onClick={() => {
+                  scrollToTop()
                   setSelectedId(null)
                   setStatus('')
                 }}
-                className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition cursor-pointer'
+                className='inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line-strong bg-white px-3.5 py-2 text-base font-semibold text-ink hover:bg-paper-deep'
               >
-                <ArrowLeft className='w-4 h-4' />
+                <ArrowLeft className='size-4' aria-hidden='true' />
                 <span>Cambiar de plantilla</span>
               </button>
+              <span className='text-base text-ink-soft'>
+                Plantillas <span aria-hidden='true'>/</span>{' '}
+                <strong className='font-semibold text-ink'>{template.name}</strong>
+              </span>
+            </nav>
 
-              <div className='flex flex-wrap items-center gap-3'>
-                <label
-                  htmlFor='accent'
-                  className='text-xs sm:text-sm font-semibold text-slate-700'
-                >
-                  Color de acento
-                </label>
-                <div className='relative flex items-center'>
-                  <input
-                    id='accent'
-                    type='color'
-                    value={accent}
-                    onChange={(e) => {
-                      setAccent(e.target.value)
-                      if (selectedId) saveAccent(selectedId, e.target.value)
-                    }}
-                    className='h-8 w-10 cursor-pointer rounded-lg border border-slate-300 bg-white p-0.5 shadow-xs'
-                  />
-                </div>
-                <div className='flex items-center gap-1.5'>
-                  {ACCENT_PRESETS.map((c) => (
-                    <button
-                      key={c}
-                      type='button'
-                      onClick={() => {
-                        setAccent(c)
-                        if (selectedId) saveAccent(selectedId, c)
-                      }}
-                      className={`h-6 w-6 rounded-full border border-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 transition-transform ${
-                        accent.toLowerCase() === c.toLowerCase()
-                          ? 'scale-125 ring-2 ring-indigo-500 ring-offset-2'
-                          : 'hover:scale-110 shadow-xs'
-                      }`}
-                      style={{ background: c }}
-                      aria-label={`Usar color ${c}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 2-Column Split: Form + Live Preview */}
-            <div className='grid gap-6 lg:grid-cols-12 items-start'>
-              {/* Form Section */}
+            <div className='grid items-start gap-6 lg:grid-cols-12'>
               <section
                 aria-label='Formulario'
-                className='lg:col-span-6 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm'
+                className='rounded-2xl border border-line bg-white p-5 sm:p-7 lg:col-span-6'
               >
                 <TemplateForm
                   template={template}
@@ -259,11 +238,51 @@ export default function App() {
                 />
               </section>
 
-              {/* Preview Section */}
               <section
-                aria-label='Previsualización'
-                className='lg:col-span-6 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm sticky top-20'
+                aria-labelledby='preview-heading'
+                className='space-y-4 rounded-2xl border border-line bg-paper-deep p-5 sm:p-6 lg:sticky lg:top-4 lg:col-span-6'
               >
+                <div className='flex flex-wrap items-center justify-between gap-3'>
+                  <h2 id='preview-heading' className='text-xl font-bold text-ink'>
+                    Así se verá en Moodle
+                  </h2>
+                  <fieldset className='flex flex-wrap items-center gap-2'>
+                    <legend className='sr-only'>Color del contenido</legend>
+                    <label htmlFor='accent' className='text-sm font-semibold text-ink-soft'>
+                      Color
+                    </label>
+                    <input
+                      id='accent'
+                      type='color'
+                      value={accent}
+                      onChange={(e) => {
+                        setAccent(e.target.value)
+                        if (selectedId) saveAccent(selectedId, e.target.value)
+                      }}
+                      className='h-8 w-10 cursor-pointer rounded-lg border border-line-strong bg-white p-0.5'
+                    />
+                    {ACCENT_PRESETS.map((c) => {
+                      const active = accent.toLowerCase() === c.toLowerCase()
+                      return (
+                        <button
+                          key={c}
+                          type='button'
+                          onClick={() => {
+                            setAccent(c)
+                            if (selectedId) saveAccent(selectedId, c)
+                          }}
+                          aria-pressed={active}
+                          aria-label={`Usar color ${c}`}
+                          className={`size-6 cursor-pointer rounded-full border-2 ${
+                            active ? 'border-ink outline-2 outline-offset-2 outline-ink' : 'border-white'
+                          }`}
+                          style={{ background: c }}
+                        />
+                      )
+                    })}
+                  </fieldset>
+                </div>
+
                 <ActionBar
                   onCopyHtml={handleCopyHtml}
                   onCopyText={handleCopyText}
@@ -284,47 +303,29 @@ export default function App() {
         <HelpSection />
       </main>
 
-      <footer className='max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-500 font-medium space-y-2'>
+      <footer className='mx-auto max-w-7xl px-4 py-8 text-center text-sm text-ink-soft sm:px-6'>
         <p>
-          Gestor de Clases · Generador de contenido educativo compatible con
-          Moodle TinyMCE
-        </p>
-        <p className='flex items-center justify-center gap-1.5 text-slate-600'>
-          <span>Powered by</span>
+          Gestor de Clases · contenido educativo compatible con el editor TinyMCE de Moodle ·{' '}
           <a
             href='https://nejca.com.ar'
             target='_blank'
             rel='noopener noreferrer'
-            className='font-bold text-indigo-600 hover:text-indigo-500 hover:underline transition'
-          >
-            Nejca
-          </a>
-          <span className='text-slate-300'>·</span>
-          <a
-            href='https://nejca.com.ar'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-slate-400 hover:text-slate-600 transition'
+            className='font-semibold text-brand-700 underline underline-offset-4'
           >
             nejca.com.ar
           </a>
         </p>
       </footer>
 
-      <div
-        role='status'
-        aria-live='polite'
-        className='sr-only'
-        style={srOnlyStyle}
-      >
+      <div role='status' aria-live='polite' className='sr-only' style={srOnlyStyle}>
         {status}
       </div>
       {status && (
         <div
-          className='fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white text-xs sm:text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl border border-slate-700/60 flex items-center gap-2 z-50 animate-fade-in'
+          className='fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-ink px-5 py-3 text-base font-semibold text-white shadow-lg animate-fade-in'
           aria-hidden='true'
         >
-          <CheckCircle2 className='w-4 h-4 text-emerald-400 shrink-0' />
+          <CheckCircle2 className='size-4 shrink-0 text-brand-200' aria-hidden='true' />
           <span>{status}</span>
         </div>
       )}
@@ -333,15 +334,22 @@ export default function App() {
   )
 }
 
+/** Al cambiar de pantalla (selector <-> editor) se empieza desde arriba. */
+function scrollToTop() {
+  document.documentElement.scrollTop = 0
+}
+
+const DEFAULT_ACCENT = '#23685c'
+
 const ACCENT_PRESETS = [
-  '#4f46e5',
-  '#0ea5e9',
-  '#059669',
-  '#d97706',
-  '#dc2626',
-  '#db2777',
-  '#7c3aed',
-  '#0d9488',
+  DEFAULT_ACCENT,
+  '#2b5ba3',
+  '#a4492a',
+  '#3b7135',
+  '#6a4a8c',
+  '#b45309',
+  '#be185d',
+  '#1f2a2e',
 ]
 
 const srOnlyStyle: React.CSSProperties = {

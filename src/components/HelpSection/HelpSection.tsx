@@ -1,5 +1,4 @@
-import { HelpCircle, ChevronDown, CheckCircle2 } from "lucide-react";
-
+import { ChevronDown, HelpCircle } from "lucide-react";
 export function HelpSection() {
   const steps = [
     {
@@ -45,47 +44,41 @@ export function HelpSection() {
   ];
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8" aria-labelledby="help-heading">
-      <details className="group rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-sm shadow-xs overflow-hidden transition-all duration-200">
-        <summary className="cursor-pointer px-5 py-4 text-sm font-bold text-slate-800 select-none flex items-center justify-between hover:bg-slate-50 transition">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <HelpCircle className="w-4 h-4" />
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6" aria-labelledby="help-heading">
+      <details className="group rounded-2xl border border-line bg-white">
+        <summary className="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 select-none">
+          <span className="flex items-center gap-3">
+            <HelpCircle className="size-5 text-brand-700" aria-hidden="true" />
+            <span id="help-heading" className="font-display text-lg font-bold text-ink">
+              Paso a paso: ¿cómo pegar el HTML en Moodle?
             </span>
-            <span id="help-heading" className="text-base font-bold text-slate-900">
-              Paso a paso: ¿Cómo pegar el HTML en Moodle?
-            </span>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200" />
+          </span>
+          <ChevronDown className="size-5 text-ink-soft transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
 
-        <div className="border-t border-slate-100 px-6 py-6 space-y-6 bg-slate-50/40">
-          <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="border-t border-line px-5 py-6">
+          <ol className="grid gap-x-8 gap-y-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr))]">
             {steps.map((step) => (
-              <div
-                key={step.num}
-                className="bg-white p-4 sm:p-4.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition"
-              >
+              <li key={step.num} className="flex gap-3">
+                <span
+                  className="font-display text-2xl font-bold leading-none text-brand-600"
+                  aria-hidden="true"
+                >
+                  {step.num}
+                </span>
                 <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                      {step.num}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-400">Paso {step.num}</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-800 mb-1.5 leading-snug">{step.title}</h3>
-                  <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed">{step.desc}</p>
+                  <h3 className="font-sans text-base font-bold text-ink">{step.title}</h3>
+                  <p className="text-base text-ink-soft">{step.desc}</p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
 
-          <div className="rounded-xl bg-indigo-50/70 border border-indigo-200/60 p-4 flex items-start sm:items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5 sm:mt-0" />
-            <p className="text-xs sm:text-sm text-indigo-950 font-medium leading-relaxed">
-              <strong>Tip:</strong> El HTML generado ya contiene todos los estilos visuales embebidos. Al pegarlo mediante <em>Herramientas → Código fuente</em>, Moodle respetará exactamente el diseño, las tarjetas y los colores elegidos sin requerir ningún plugin adicional.
-            </p>
-          </div>
+          <p className="mt-6 rounded-xl bg-brand-50 p-4 text-base text-brand-900">
+            <strong>Tip:</strong> el HTML generado ya trae todos los estilos. Al pegarlo en{" "}
+            <em>Herramientas → Código fuente</em>, Moodle respeta el diseño y los colores sin
+            plugins adicionales.
+          </p>
         </div>
       </details>
     </section>

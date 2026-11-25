@@ -14,6 +14,16 @@ Moodle**.
 1. **📚 Clase teórica** — explicación estructurada de un tema.
 2. **📝 Actividad** — consigna o trabajo práctico.
 3. **📖 Material educativo** — recurso de estudio con lecturas, videos y enlaces.
+4. **🎥 Encuentro sincrónico** — encuentro por videoconferencia con apertura,
+   dinámicas de participación y cierre.
+5. **🗺️ Bienvenida y hoja de ruta** — presentación de la materia: itinerario,
+   asistencia, canales de comunicación y contrato didáctico de IA.
+
+Las plantillas siguen las *Orientaciones pedagógicas para el diseño y la
+implementación de la Educación Híbrida en la Educación Técnica Superior*
+(Dirección de Educación Superior, Río Negro, 2026): escenario de cada clase,
+tiempos estimados, relación con la secuencia, devolución, uso de IA declarado
+y aviso de que las Prácticas Profesionalizantes son 100 % presenciales.
 
 ## Cómo usarlo (docente)
 

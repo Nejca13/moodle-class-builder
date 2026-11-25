@@ -1,95 +1,160 @@
 @import "tailwindcss";
 
+/*
+ * Identidad visual: cuaderno de planificación docente.
+ * Papel cálido, tinta oscura y un verde pizarrón como color de marca.
+ * Los colores de escenario (presencial / sincrónico / asincrónico) siempre
+ * van acompañados de ícono y texto: nunca transmiten información solos.
+ */
+@theme {
+  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+
+  --color-paper: #f7f3ec;
+  --color-paper-deep: #efe8dc;
+  --color-ink: #1f2a2e;
+  --color-ink-soft: #4b5457;
+  /* Bordes de controles: >= 3:1 sobre blanco (WCAG 1.4.11). */
+  --color-line-strong: #7b827d;
+  /* Separadores decorativos. */
+  --color-line: #ddd5c7;
+
+  --color-brand-50: #eef6f4;
+  --color-brand-100: #d6ebe6;
+  --color-brand-200: #aed6cd;
+  --color-brand-300: #7fbcae;
+  --color-brand-400: #4f9c8c;
+  --color-brand-500: #2f7f70;
+  --color-brand-600: #23685c;
+  --color-brand-700: #1d544b;
+  --color-brand-800: #19443d;
+  --color-brand-900: #153833;
+  --color-brand-950: #0b201d;
+
+  --color-presencial: #a4492a;
+  --color-presencial-soft: #f8e7df;
+  --color-sincronico: #2b5ba3;
+  --color-sincronico-soft: #e3ebf8;
+  --color-asincronico: #3b7135;
+  --color-asincronico-soft: #e4f0e1;
+  --color-cursada: #6a4a8c;
+  --color-cursada-soft: #eee6f6;
+}
+
 :root {
   color-scheme: light;
-  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Outfit", "Plus Jakarta Sans", sans-serif;
+  --scrollbar-thumb: #8d948f;
+  --scrollbar-track: var(--color-paper-deep);
 }
 
-html,
 body {
   margin: 0;
-  padding: 0;
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.04) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.04) 0px, transparent 50%);
-  background-attachment: fixed;
-  color: #0f172a;
-}
-
-body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   font-family: var(--font-sans);
+  /* Evita saltos de layout mientras cargan las fuentes web. */
+  font-size-adjust: from-font;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  letter-spacing: -0.015em;
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
-/* Custom smooth scrollbar */
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+/*
+ * La vista previa tiene que mostrar el HTML tal como se verá en Moodle:
+ * los títulos heredan la fuente que define el propio contenido generado.
+ */
+.mcb-preview :is(h1, h2, h3, h4) {
+  font-family: inherit;
+  font-optical-sizing: auto;
+  letter-spacing: normal;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
+p,
+li,
+.text-pretty {
+  text-wrap: pretty;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
+/* Barras de desplazamiento con propiedades estándar. */
+html,
+.mcb-scroll {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+@supports not (scrollbar-color: auto) {
+  html::-webkit-scrollbar,
+  .mcb-scroll::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  html::-webkit-scrollbar-thumb,
+  .mcb-scroll::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  html::-webkit-scrollbar-track,
+  .mcb-scroll::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
 }
 
-/* Glass & Card effects */
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* Foco visible y consistente en todos los controles. */
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 2px;
 }
 
-.subtle-shadow {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+/*
+ * Tarjeta de plantilla: el botón del título se estira sobre toda la
+ * tarjeta, y el hover/foco se dibuja en la tarjeta.
+ */
+.mcb-card {
+  position: relative;
 }
-
-.elevation-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.mcb-card .mcb-card-action::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
-
-.elevation-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-}
-
-/* Input focus glow */
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
+.mcb-card .mcb-card-action:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+.mcb-card:has(.mcb-card-action:focus-visible) {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 3px;
+}
+.mcb-card:has(.mcb-card-action:hover) {
+  border-color: var(--color-brand-500);
 }
 
-/* Keyframe animations */
-@keyframes fadeIn {
+/* Entrada suave solo si el usuario no pidió reducir el movimiento. */
+@keyframes mcb-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    translate: 0 6px;
   }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: mcb-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@media (forced-colors: active) {
+  .mcb-card,
+  .mcb-tag {
+    border: 1px solid CanvasText;
+  }
 }

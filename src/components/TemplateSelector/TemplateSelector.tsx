@@ -1,62 +1,85 @@
 import type { TemplateDefinition } from "../../types/template";
-import { BookOpen, FileText, GraduationCap, Layers, ArrowRight } from "lucide-react";
+import { TEMPLATE_GROUPS } from "../../templates";
+import { ScenarioTag, TemplateIcon } from "../TemplateIcon/TemplateIcon";
 
 interface TemplateSelectorProps {
   templates: TemplateDefinition[];
   onSelect: (id: string) => void;
 }
 
-function renderTemplateIcon(icon: string) {
-  switch (icon) {
-    case "BookOpen":
-      return <BookOpen className="w-6 h-6 text-indigo-600" />;
-    case "FileText":
-      return <FileText className="w-6 h-6 text-indigo-600" />;
-    case "GraduationCap":
-      return <GraduationCap className="w-6 h-6 text-indigo-600" />;
-    default:
-      return <Layers className="w-6 h-6 text-indigo-600" />;
-  }
-}
-
 export function TemplateSelector({ templates, onSelect }: TemplateSelectorProps) {
   return (
-    <section aria-labelledby="select-template-heading" className="max-w-6xl mx-auto px-4 sm:px-6 py-10 animate-fade-in">
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-3">
-          Paso 1 de 2
-        </span>
-        <h2 id="select-template-heading" className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+    <section
+      aria-labelledby="select-template-heading"
+      className="mx-auto max-w-6xl px-4 py-10 sm:px-6 animate-fade-in"
+    >
+      <div className="max-w-2xl">
+        <h2
+          id="select-template-heading"
+          className="text-[clamp(1.9rem,1.4rem+1.6vw,2.6rem)] font-bold leading-tight text-ink"
+        >
           Elegí una plantilla
         </h2>
-        <p className="text-slate-500 mt-2 text-sm sm:text-base">
-          Seleccioná el formato ideal para tu clase o recurso. El código generado será 100% compatible con TinyMCE de Moodle.
+        <p className="mt-3 text-lg text-ink-soft">
+          Están ordenadas según el momento de la cursada. Completás el formulario y te
+          llevás el HTML listo para pegar en Moodle.
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {templates.map((template) => (
-          <button
-            key={template.id}
-            type="button"
-            onClick={() => onSelect(template.id)}
-            className="group relative text-left bg-white/90 backdrop-blur-sm border border-slate-200/90 hover:border-indigo-500/80 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="w-12 h-12 rounded-xl bg-indigo-50/80 border border-indigo-100/80 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-100 transition-transform duration-300 shadow-xs" aria-hidden="true">
-              {renderTemplateIcon(template.icon)}
-            </div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                {template.name}
-              </h3>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
-            </div>
-            <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-              {template.description}
-            </p>
-          </button>
-        ))}
-      </div>
+      <ol className="mt-10 space-y-12">
+        {TEMPLATE_GROUPS.map((group, index) => {
+          const items = templates.filter((t) => t.group === group.id);
+          if (items.length === 0) return null;
+          const headingId = `group-${group.id}`;
+          return (
+            <li key={group.id}>
+              <section aria-labelledby={headingId}>
+                <div className="flex items-baseline gap-4 border-b border-line pb-3">
+                  <span
+                    className="font-display text-3xl font-bold text-brand-600"
+                    aria-hidden="true"
+                  >
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3 id={headingId} className="text-xl font-bold text-ink">
+                      {group.title}
+                    </h3>
+                    <p className="text-base text-ink-soft">{group.description}</p>
+                  </div>
+                </div>
+
+                <ul className="mt-5 grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr))]">
+                  {items.map((template) => (
+                    <li key={template.id} className="flex">
+                      <article className="mcb-card flex w-full flex-col gap-3 rounded-2xl border border-line bg-white p-5 shadow-[0_1px_0_var(--color-line)] transition-colors">
+                        <div className="flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                          <TemplateIcon icon={template.icon} className="size-6" />
+                        </div>
+                        <h4 className="text-lg font-bold text-ink">
+                          <button
+                            type="button"
+                            onClick={() => onSelect(template.id)}
+                            className="mcb-card-action cursor-pointer text-start"
+                          >
+                            {template.name}
+                          </button>
+                        </h4>
+                        <p className="text-base text-ink-soft">{template.description}</p>
+                        <footer className="mt-auto flex flex-wrap gap-2 pt-1">
+                          {template.scenarios.map((s) => (
+                            <ScenarioTag key={s} scenario={s} />
+                          ))}
+                        </footer>
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }
