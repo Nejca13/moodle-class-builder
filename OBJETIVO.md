@@ -79,7 +79,7 @@ moodle-class-builder/
     tests/       *.test.ts (unit + integration), setup.ts
     App.tsx, main.tsx, styles/main.css
   tests/moodle/  theoretical-example.html, practical-example.html,
-                educational-example.html
+                educational-example.html, roadmap-example.html
   docs/ADD_TEMPLATE.md
   README.md
 ```

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { TemplateValue, TemplateValues } from './types/template'
 import { getTemplateById, templates } from './templates'
 import {
+  DEFAULT_ACCENT,
   getList,
   getText,
   isValidUrl,
@@ -28,6 +29,8 @@ import { TemplateForm } from './components/TemplateForm/TemplateForm'
 import { Preview } from './components/Preview/Preview'
 import { ActionBar, HtmlOutput } from './components/CopyButton/CopyButton'
 import { HelpSection } from './components/HelpSection/HelpSection'
+import { ExamplePage } from './components/ExamplePage/ExamplePage'
+import { EXAMPLES } from './examples'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Analytics } from '@vercel/analytics/react'
 
@@ -104,6 +107,13 @@ export default function App() {
   const [showAllErrors, setShowAllErrors] = useState(false)
 
   const template = useMemo(() => getTemplateById(selectedId), [selectedId])
+
+  // `?ejemplo=<id>` opens the example page of a template (from "Ver ejemplo").
+  const [exampleId, setExampleId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get('ejemplo'),
+  )
+  const exampleTemplate =
+    exampleId && EXAMPLES[exampleId] ? getTemplateById(exampleId) : null
 
   useEffect(() => {
     if (selectedId) {
@@ -201,7 +211,17 @@ export default function App() {
       <Header />
 
       <main className='flex-1'>
-        {!template ? (
+        {exampleTemplate ? (
+          <ExamplePage
+            template={exampleTemplate}
+            onUseTemplate={(id) => {
+              // Leave the example URL so a reload keeps the editor.
+              window.history.replaceState(null, '', window.location.pathname)
+              setExampleId(null)
+              handleSelect(id)
+            }}
+          />
+        ) : !template ? (
           <TemplateSelector templates={templates} onSelect={handleSelect} />
         ) : (
           <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 animate-fade-in'>
@@ -338,8 +358,6 @@ export default function App() {
 function scrollToTop() {
   document.documentElement.scrollTop = 0
 }
-
-const DEFAULT_ACCENT = '#23685c'
 
 const ACCENT_PRESETS = [
   DEFAULT_ACCENT,

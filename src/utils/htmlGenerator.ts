@@ -80,9 +80,10 @@ function shade(hex: string, amount: number): string {
   return rgbToHex(mix(rgb[0]), mix(rgb[1]), mix(rgb[2]));
 }
 
-const DEFAULT_ACCENT = "#4f46e5";
+/** Default accent for generated content (the app's "verde pizarrón"). */
+export const DEFAULT_ACCENT = "#23685c";
 
-/** Builds the full palette from a user-provided accent (falls back to indigo). */
+/** Builds the full palette from a user-provided accent (falls back to DEFAULT_ACCENT). */
 export function resolveTheme(accent?: string): ResolvedTheme {
   const base = accent && hexToRgb(accent) ? accent! : DEFAULT_ACCENT;
   const rgb = hexToRgb(base)!;

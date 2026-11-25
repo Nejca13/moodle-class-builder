@@ -1,5 +1,7 @@
 import type { TemplateDefinition } from "../../types/template";
 import { TEMPLATE_GROUPS } from "../../templates";
+import { ExternalLink } from "lucide-react";
+import { EXAMPLES } from "../../examples";
 import { ScenarioTag, TemplateIcon } from "../TemplateIcon/TemplateIcon";
 
 interface TemplateSelectorProps {
@@ -66,10 +68,26 @@ export function TemplateSelector({ templates, onSelect }: TemplateSelectorProps)
                           </button>
                         </h4>
                         <p className="text-base text-ink-soft">{template.description}</p>
-                        <footer className="mt-auto flex flex-wrap gap-2 pt-1">
-                          {template.scenarios.map((s) => (
-                            <ScenarioTag key={s} scenario={s} />
-                          ))}
+                        <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-1">
+                          <div className="flex flex-wrap gap-2">
+                            {template.scenarios.map((s) => (
+                              <ScenarioTag key={s} scenario={s} />
+                            ))}
+                          </div>
+                          {EXAMPLES[template.id] && (
+                            <a
+                              href={`?ejemplo=${template.id}`}
+                              target="_blank"
+                              rel="noopener"
+                              className="inline-flex items-center gap-1.5 text-base font-semibold text-brand-700 underline decoration-brand-300 underline-offset-4 hover:decoration-brand-700"
+                            >
+                              Ver ejemplo
+                              <span className="sr-only">
+                                {" "}de {template.name} (se abre en una pestaña nueva)
+                              </span>
+                              <ExternalLink className="size-4" aria-hidden="true" />
+                            </a>
+                          )}
                         </footer>
                       </article>
                     </li>

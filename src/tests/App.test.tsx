@@ -11,6 +11,7 @@ vi.mock("../utils/clipboard", () => ({
 describe("App integration", () => {
   beforeEach(() => {
     localStorage.clear();
+    window.history.replaceState(null, "", "/");
     vi.mocked(copyText).mockClear();
   });
 
@@ -89,6 +90,31 @@ describe("App integration", () => {
       "Clases y encuentros",
       "Trabajo en el aula virtual",
     ]);
+  });
+
+  it("links each template card to its example in a new tab", () => {
+    render(<App />);
+
+    const links = screen.getAllByRole("link", { name: /Ver ejemplo/i });
+    expect(links).toHaveLength(5);
+    const activity = screen.getByRole("link", { name: /Ver ejemplo de Actividad/i });
+    expect(activity).toHaveAttribute("href", "?ejemplo=practical-activity");
+    expect(activity).toHaveAttribute("target", "_blank");
+    // The landing no longer embeds the examples.
+    expect(screen.queryByText(/TP 1: Diario de observación de un gato/)).not.toBeInTheDocument();
+  });
+
+  it("opens the example page from ?ejemplo= and switches to the editor", async () => {
+    window.history.pushState(null, "", "/?ejemplo=practical-activity");
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByText(/TP 1: Diario de observación de un gato/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Usar esta plantilla/i }));
+    expect(window.location.search).toBe("");
+    expect(screen.getByRole("heading", { name: /^Actividad$/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Título/i)).toHaveValue("");
   });
 
   it("clears the form", async () => {
