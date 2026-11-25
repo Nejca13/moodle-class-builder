@@ -1,5 +1,5 @@
 import { getTemplateById } from "../templates";
-import { EXAMPLES } from "../examples";
+import { hasExample } from "../examples";
 
 /**
  * The URL decides what is shown (static site, no router):
@@ -18,7 +18,7 @@ export function readRoute(search: string): Route {
   const editorId = params.get("plantilla");
   if (editorId && getTemplateById(editorId)) return { view: "editor", id: editorId };
   const exampleId = params.get("ejemplo");
-  if (exampleId && EXAMPLES[exampleId] && getTemplateById(exampleId)) {
+  if (exampleId && hasExample(exampleId) && getTemplateById(exampleId)) {
     return { view: "example", id: exampleId };
   }
   return { view: "selector" };

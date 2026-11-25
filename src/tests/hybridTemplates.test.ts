@@ -7,7 +7,7 @@ import { synchronousMeeting } from "../templates/synchronousMeeting";
 import { courseRoadmap } from "../templates/courseRoadmap";
 import { AI_LEVELS, AI_PROTOCOL } from "../templates/hybrid";
 import { validateGeneratedHtml } from "../utils/htmlGenerator";
-import { EXAMPLE_ACCENTS, EXAMPLES } from "../examples";
+import { EXAMPLE_ACCENTS, getExample, PRODUCTION_BASE } from "../examples";
 import roadmapExampleHtml from "../../tests/moodle/roadmap-example.html?raw";
 
 describe("marco de educación híbrida en las plantillas", () => {
@@ -153,15 +153,18 @@ describe("marco de educación híbrida en las plantillas", () => {
     const colors = templates.map((t) => EXAMPLE_ACCENTS[t.id]);
     expect(new Set(colors).size).toBe(templates.length);
     for (const t of templates) {
-      expect(String(EXAMPLES[t.id].portada), t.id).toMatch(/^https:\/\/thumb\.wikimedia\.org\//);
-      expect(t.generateHtml(EXAMPLES[t.id], EXAMPLE_ACCENTS[t.id]), t.id).toContain(EXAMPLE_ACCENTS[t.id]);
+      const values = getExample(t.id, PRODUCTION_BASE)!;
+      // Las fotos están en el repo (public/ejemplos) y se sirven desde el propio sitio.
+      expect(String(values.portada), t.id).toMatch(/^https:\/\/moodle-class-builder\.vercel\.app\/ejemplos\/[a-z-]+\.jpg$/);
+      expect(t.generateHtml(values, EXAMPLE_ACCENTS[t.id]), t.id).toContain(EXAMPLE_ACCENTS[t.id]);
     }
   });
 
   it("hay un ejemplo válido para cada plantilla", () => {
     for (const t of templates) {
-      expect(EXAMPLES[t.id], t.id).toBeDefined();
-      const html = t.generateHtml(EXAMPLES[t.id]);
+      const values = getExample(t.id);
+      expect(values, t.id).toBeDefined();
+      const html = t.generateHtml(values!);
       expect(validateGeneratedHtml(html).valid, t.id).toBe(true);
     }
   });
@@ -169,7 +172,7 @@ describe("marco de educación híbrida en las plantillas", () => {
   it("el ejemplo de bienvenida coincide con el HTML guardado en tests/moodle", () => {
     const norm = (h: string) => h.replace(/\s+/g, " ").trim();
     expect(
-      norm(courseRoadmap.generateHtml(EXAMPLES["course-roadmap"], EXAMPLE_ACCENTS["course-roadmap"])),
+      norm(courseRoadmap.generateHtml(getExample("course-roadmap", PRODUCTION_BASE)!, EXAMPLE_ACCENTS["course-roadmap"])),
     ).toBe(norm(roadmapExampleHtml));
   });
 });

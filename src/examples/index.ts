@@ -1,30 +1,33 @@
 import type { TemplateValues } from "../types/template";
 import { AI_LEVELS } from "../templates/hybrid";
 
+/** Dominio de producción: base de las fotos en el HTML de ejemplo para Moodle. */
+export const PRODUCTION_BASE = "https://moodle-class-builder.vercel.app/";
+
 /**
- * Fotos de Wikimedia Commons en dominio público o CC0 (no requieren
- * atribución). Fuente de cada una al lado.
+ * Fotos de Wikimedia Commons en dominio público o CC0, copiadas al repo en
+ * public/ejemplos/ (créditos en public/ejemplos/CREDITOS.md) para no depender
+ * de servidores externos.
  */
-const PHOTOS = {
-  // https://commons.wikimedia.org/wiki/File:Kittens_resting_close_together_for_warmth_and_security.jpg (CC0)
-  kittensResting:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Kittens_resting_close_together_for_warmth_and_security.jpg/1280px-Kittens_resting_close_together_for_warmth_and_security.jpg",
-  // https://commons.wikimedia.org/wiki/File:Los_Canarios,_restaurant_cat_on_wall.jpg (CC0)
-  catOnWall:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Los_Canarios%2C_restaurant_cat_on_wall.jpg/1280px-Los_Canarios%2C_restaurant_cat_on_wall.jpg",
-  // https://commons.wikimedia.org/wiki/File:A_kitten_in_the_hand_(Flickr).jpg (CC0)
-  kittenInHand:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/A_kitten_in_the_hand_%28Flickr%29.jpg/1280px-A_kitten_in_the_hand_%28Flickr%29.jpg",
-  // https://commons.wikimedia.org/wiki/File:Kitten_sleeping.jpg (CC0)
-  kittenSleeping:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Kitten_sleeping.jpg/1280px-Kitten_sleeping.jpg",
-  // https://commons.wikimedia.org/wiki/File:A_cat_pauses_over_a_bowl_of_food,_2011.jpg (dominio público)
-  catFoodBowl:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/A_cat_pauses_over_a_bowl_of_food%2C_2011.jpg/1280px-A_cat_pauses_over_a_bowl_of_food%2C_2011.jpg",
-  // https://commons.wikimedia.org/wiki/File:Stray_garden_cat_eating_%27Cat_food%27.JPG (CC0)
-  catEatingGarden:
-    "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Stray_garden_cat_eating_%27Cat_food%27.JPG/1280px-Stray_garden_cat_eating_%27Cat_food%27.JPG",
+const PHOTO_FILES = {
+  kittensResting: "kittens-resting.jpg",
+  catOnWall: "cat-on-wall.jpg",
+  kittenInHand: "kitten-in-hand.jpg",
+  kittenSleeping: "kitten-sleeping.jpg",
+  catFoodBowl: "cat-food-bowl.jpg",
+  catEatingGarden: "cat-eating-garden.jpg",
 };
+
+type Photos = Record<keyof typeof PHOTO_FILES, string>;
+
+/** Absolute photo URLs for a given site base (the generated HTML needs absolute URLs). */
+function photoUrls(base: string): Photos {
+  const entries = Object.entries(PHOTO_FILES).map(([key, file]) => [
+    key,
+    new URL(`ejemplos/${file}`, base).href,
+  ]);
+  return Object.fromEntries(entries) as Photos;
+}
 
 /** Color de acento de cada ejemplo, para mostrar que el color es configurable. */
 export const EXAMPLE_ACCENTS: Record<string, string> = {
@@ -40,7 +43,8 @@ export const EXAMPLE_ACCENTS: Record<string, string> = {
  * ("Gatitos #1"). Son datos, no HTML: se generan con la plantilla en cada
  * render, así siempre reflejan el diseño actual.
  */
-export const EXAMPLES: Record<string, TemplateValues> = {
+function buildExamples(PHOTOS: Photos): Record<string, TemplateValues> {
+  return {
   "course-roadmap": {
     title: "Gatitos #1 — Cuidado felino básico",
     portada: PHOTOS.kittensResting,
@@ -208,3 +212,19 @@ export const EXAMPLES: Record<string, TemplateValues> = {
       "Material elaborado para Gatitos #1. Licencia CC BY-SA 4.0. Fotos: Wikimedia Commons, dominio público y CC0.",
   },
 };
+}
+
+/** Ids de las plantillas que tienen ejemplo. */
+export const EXAMPLE_IDS: string[] = Object.keys(buildExamples(photoUrls(PRODUCTION_BASE)));
+
+export function hasExample(id: string): boolean {
+  return EXAMPLE_IDS.includes(id);
+}
+
+/**
+ * Valores del ejemplo de una plantilla. Las fotos apuntan al sitio donde corre
+ * la app (localhost o producción); `base` permite fijar otro dominio.
+ */
+export function getExample(id: string, base: string = document.baseURI): TemplateValues | undefined {
+  return buildExamples(photoUrls(base))[id];
+}

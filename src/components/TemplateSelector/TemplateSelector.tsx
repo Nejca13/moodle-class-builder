@@ -1,7 +1,7 @@
 import type { TemplateDefinition } from "../../types/template";
 import { TEMPLATE_GROUPS } from "../../templates";
 import { ExternalLink } from "lucide-react";
-import { EXAMPLES } from "../../examples";
+import { hasExample } from "../../examples";
 import { ScenarioTag, TemplateIcon } from "../TemplateIcon/TemplateIcon";
 
 interface TemplateSelectorProps {
@@ -74,7 +74,7 @@ export function TemplateSelector({ templates, onSelect }: TemplateSelectorProps)
                               <ScenarioTag key={s} scenario={s} />
                             ))}
                           </div>
-                          {EXAMPLES[template.id] && (
+                          {hasExample(template.id) && (
                             <a
                               href={`?ejemplo=${template.id}`}
                               target="_blank"
