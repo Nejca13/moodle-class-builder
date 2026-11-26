@@ -161,3 +161,89 @@ html,
     border: 1px solid CanvasText;
   }
 }
+
+/*
+ * Diálogos nativos (<dialog> + showModal). Animación de entrada/salida del
+ * top layer según modern-web-guidance (ui-behaviors/animate-to-from-top-layer).
+ */
+.mcb-dialog {
+  width: min(100% - 2rem, 30rem);
+  max-height: min(100dvh - 2rem, 44rem);
+  overflow: auto;
+}
+.mcb-dialog--lg {
+  width: min(100% - 2rem, 44rem);
+}
+.mcb-dialog[open] {
+  display: block;
+}
+.mcb-dialog:modal {
+  overscroll-behavior: contain;
+}
+.mcb-dialog::backdrop {
+  background: rgb(31 42 46 / 0.45);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mcb-dialog,
+  .mcb-dialog::backdrop {
+    transition:
+      opacity 0.2s ease,
+      translate 0.2s ease,
+      overlay 0.2s allow-discrete,
+      display 0.2s allow-discrete;
+  }
+  .mcb-dialog:not([open]),
+  .mcb-dialog:not([open])::backdrop {
+    opacity: 0;
+  }
+  .mcb-dialog:not([open]) {
+    translate: 0 0.75rem;
+  }
+  @starting-style {
+    .mcb-dialog[open],
+    .mcb-dialog[open]::backdrop {
+      opacity: 0;
+    }
+    .mcb-dialog[open] {
+      translate: 0 0.75rem;
+    }
+  }
+}
+
+/*
+ * Secciones plegables del formulario: <details> nativos (accordion de
+ * modern-web-guidance). El contenido cerrado sigue siendo encontrable con
+ * la búsqueda del navegador en los navegadores que lo soportan.
+ */
+.mcb-section > summary {
+  list-style: none;
+}
+.mcb-section > summary::-webkit-details-marker {
+  display: none;
+}
+.mcb-section .mcb-section-chevron {
+  transition: rotate 0.2s ease;
+}
+.mcb-section[open] .mcb-section-chevron {
+  rotate: 180deg;
+}
+.mcb-section:has([aria-invalid="true"]) {
+  border-color: var(--color-rose-600, #e11d48);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mcb-section {
+    interpolate-size: allow-keywords;
+  }
+  .mcb-section::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 0.25s ease,
+      content-visibility 0.25s allow-discrete;
+  }
+  .mcb-section[open]::details-content {
+    block-size: auto;
+  }
+}

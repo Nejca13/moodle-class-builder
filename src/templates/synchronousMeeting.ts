@@ -13,6 +13,7 @@ import {
   setActiveImages,
 } from "../utils/htmlGenerator";
 import { SYNC_FORMATS } from "./hybrid";
+import { CEAER_COVER } from "../content/brand";
 
 /**
  * Encuentro de presencialidad sincrónica virtual (págs. 29-32): no es una
@@ -28,7 +29,7 @@ export const synchronousMeeting: TemplateDefinition = {
   scenarios: ["sincronico"],
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Debate sobre seguridad en redes IoT" },
-    { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
+    { id: "portada", label: "Imagen de portada", type: "image", required: true, suggestedImage: CEAER_COVER, help: "Pegá el enlace de una imagen (lo más liviano) o subí un archivo desde tu dispositivo: lo achicamos para que pese poco." },
     { id: "format", label: "Formato del encuentro", type: "select", options: SYNC_FORMATS, help: "Según su propósito (pág. 32)." },
     {
       id: "schedule",
@@ -85,6 +86,11 @@ export const synchronousMeeting: TemplateDefinition = {
       placeholder: "Ej: la grabación y la pizarra quedan en la sección de la unidad.",
       help: "Los materiales y producciones quedan disponibles para todos, también para quien no pudo conectarse (pág. 25).",
     },
+  ],
+  sections: [
+    { id: "esencial", title: "Lo esencial", description: "Cuándo es, dónde se conectan y para qué.", fields: ["title", "portada", "format", "schedule", "duration", "meetingLink", "objectives"] },
+    { id: "encuentro", title: "Antes y durante el encuentro", description: "Preparación, apertura, desarrollo y cierre.", fields: ["preparation", "opening", "development", "dynamics", "questions", "collaborativeTools", "closing"] },
+    { id: "despues", title: "Después del encuentro", description: "Tarea posterior, participación y grabación.", fields: ["afterMeeting", "participationCriteria", "recording"] },
   ],
   generateHtml(values, accent, images) {
     setActiveImages(images);

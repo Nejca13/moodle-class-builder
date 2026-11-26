@@ -18,7 +18,7 @@ Moodle**. Sin backend, sin base de datos, sin plugins ni permisos de Moodle.
 - Tailwind CSS v4 (`@tailwindcss/vite`)
 - DOMPurify (solo para sanitizar el preview)
 - Vitest + @testing-library/react + jsdom (tests unit + integration)
-- Gestor de paquetes: **npm**
+- Gestor de paquetes: **pnpm** (nunca npm)
 
 ## Plantillas (3 iniciales)
 
@@ -33,9 +33,9 @@ Para agregar una 4ª plantilla: crear `src/templates/xxx.ts` y registrarla en
 ## Estado actual (al 2026-08-26)
 
 - ✅ Proyecto completo y funcional.
-- ✅ Build: `npm run build` OK (tsc + vite).
-- ✅ Lint: `npm run lint` OK.
-- ✅ Tests: **45/45 passing** (`npm test`).
+- ✅ Build: `pnpm build` OK (tsc + vite).
+- ✅ Lint: `pnpm lint` OK.
+- ✅ Tests: **45/45 passing** (`pnpm test`).
 - ✅ README.md y docs/ADD_TEMPLATE.md escritos.
 - ✅ Ejemplos de HTML generado en `tests/moodle/*.html`.
 
@@ -53,11 +53,11 @@ Para agregar una 4ª plantilla: crear `src/templates/xxx.ts` y registrarla en
 
 ```bash
 cd moodle-class-builder
-npm install
-npm run dev        # desarrollo
-npm test           # tests
-npm run build      # build de producción -> dist/
-npm run lint       # lint
+pnpm install
+pnpm dev        # desarrollo
+pnpm test           # tests
+pnpm build      # build de producción -> dist/
+pnpm lint       # lint
 ```
 
 ## Estructura

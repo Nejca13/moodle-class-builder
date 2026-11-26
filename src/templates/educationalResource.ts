@@ -12,6 +12,7 @@ import {
   getText,
   setActiveImages,
 } from "../utils/htmlGenerator";
+import { CEAER_COVER } from "../content/brand";
 
 export const educationalResource: TemplateDefinition = {
   id: "educational-resource",
@@ -22,7 +23,7 @@ export const educationalResource: TemplateDefinition = {
   scenarios: ["asincronico"],
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Guía de redes IoT" },
-    { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
+    { id: "portada", label: "Imagen de portada", type: "image", required: true, suggestedImage: CEAER_COVER, help: "Pegá el enlace de una imagen (lo más liviano) o subí un archivo desde tu dispositivo: lo achicamos para que pese poco." },
     { id: "estimatedTime", label: "Tiempo estimado de lectura / estudio", type: "text", placeholder: "Ej: 45 minutos" },
     { id: "description", label: "Descripción", type: "textarea", placeholder: "Describí brevemente el material." },
     {
@@ -52,6 +53,11 @@ export const educationalResource: TemplateDefinition = {
       placeholder: "Ej: Autor (año). Título. Licencia CC BY-SA 4.0.",
       help: "Indicá licencias, permisos y cómo citar el material (pág. 39).",
     },
+  ],
+  sections: [
+    { id: "esencial", title: "Lo esencial", description: "El material y dónde encontrarlo.", fields: ["title", "portada", "description", "reading", "video", "links"] },
+    { id: "guia", title: "Guía de estudio", description: "Cómo recorrer el material y qué tener en cuenta.", fields: ["estimatedTime", "readingGuide", "mainConcepts", "recommendations", "questions"] },
+    { id: "accesibilidad", title: "Accesibilidad y fuentes", description: "Formatos alternativos, licencias y citas.", fields: ["accessibility", "sources"] },
   ],
   generateHtml(values, accent, images) {
     setActiveImages(images);

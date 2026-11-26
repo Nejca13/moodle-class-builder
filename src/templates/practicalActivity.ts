@@ -12,6 +12,7 @@ import {
   setActiveImages,
 } from "../utils/htmlGenerator";
 import { aiFields, renderAiBlock, scenarioField, WORK_MODES } from "./hybrid";
+import { CEAER_COVER } from "../content/brand";
 
 export const practicalActivity: TemplateDefinition = {
   id: "practical-activity",
@@ -22,7 +23,7 @@ export const practicalActivity: TemplateDefinition = {
   scenarios: ["asincronico", "presencial"],
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: API REST con FastAPI" },
-    { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
+    { id: "portada", label: "Imagen de portada", type: "image", required: true, suggestedImage: CEAER_COVER, help: "Pegá el enlace de una imagen (lo más liviano) o subí un archivo desde tu dispositivo: lo achicamos para que pese poco." },
     scenarioField,
     { id: "workMode", label: "Modalidad de trabajo", type: "select", options: WORK_MODES },
     {
@@ -68,6 +69,12 @@ export const practicalActivity: TemplateDefinition = {
       placeholder: "Ej: foro de consultas de la unidad; respondo en 48 h hábiles.",
       help: "Canal y tiempo de respuesta acordados.",
     },
+  ],
+  sections: [
+    { id: "esencial", title: "Lo esencial", description: "Qué tienen que hacer, qué entregan y cuándo.", fields: ["title", "portada", "objective", "assignment", "deliverable", "dueDate"] },
+    { id: "organizacion", title: "Organización", description: "Escenario, modalidad, tiempo, contexto y pasos.", fields: ["scenario", "workMode", "estimatedTime", "context", "sequenceLink", "steps", "resources"] },
+    { id: "evaluacion", title: "Evaluación y devolución", description: "Criterios, devolución y consultas.", fields: ["criteria", "feedback", "support"] },
+    { id: "ia", title: "Uso de inteligencia artificial", description: "Qué uso de IA se permite en esta actividad.", fields: ["aiLevel", "aiNotes"] },
   ],
   generateHtml(values, accent, images) {
     setActiveImages(images);

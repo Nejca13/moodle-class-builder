@@ -11,6 +11,7 @@ import {
   setActiveImages,
 } from "../utils/htmlGenerator";
 import { scenarioField } from "./hybrid";
+import { CEAER_COVER } from "../content/brand";
 
 export const theoreticalClass: TemplateDefinition = {
   id: "theoretical-class",
@@ -21,7 +22,7 @@ export const theoreticalClass: TemplateDefinition = {
   scenarios: ["presencial", "sincronico"],
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Introducción a Python" },
-    { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
+    { id: "portada", label: "Imagen de portada", type: "image", required: true, suggestedImage: CEAER_COVER, help: "Pegá el enlace de una imagen (lo más liviano) o subí un archivo desde tu dispositivo: lo achicamos para que pese poco." },
     scenarioField,
     { id: "estimatedTime", label: "Duración / tiempo estimado", type: "text", placeholder: "Ej: 80 minutos" },
     {
@@ -59,6 +60,11 @@ export const theoreticalClass: TemplateDefinition = {
       placeholder: "Consigna de sistematización o producción en Moodle.",
       help: "Lo trabajado en clase se proyecta en una tarea asincrónica (pág. 28).",
     },
+  ],
+  sections: [
+    { id: "esencial", title: "Lo esencial", description: "Con esto ya podés publicar la clase.", fields: ["title", "portada", "purpose", "objectives", "contents"] },
+    { id: "desarrollo", title: "Cómo se desarrolla la clase", description: "Escenario, tiempos, apertura y desarrollo.", fields: ["scenario", "estimatedTime", "introduction", "development", "problemQuestions", "keyConcepts", "example"] },
+    { id: "cierre", title: "Cierre y continuidad", description: "Actividad, cierre y qué sigue en el aula virtual.", fields: ["activity", "conclusion", "afterClass"] },
   ],
   generateHtml(values, accent, images) {
     setActiveImages(images);

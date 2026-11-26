@@ -9,6 +9,10 @@ Moodle**.
 - ✅ Funciona en el navegador; el contenido no sale del dispositivo.
 - ✅ Se despliega como sitio estático (Vercel, Netlify, GitHub Pages).
 
+**Sitio institucional:** <https://plantillas.ceaer.edu.ar>. Las imágenes del
+HTML generado (portada del CEAER y fotos de los ejemplos) se cargan desde ese
+dominio: está definido en `src/content/brand.ts` (`PRODUCTION_BASE`).
+
 ## Plantillas incluidas
 
 1. **📚 Clase teórica** — explicación estructurada de un tema.
@@ -28,7 +32,7 @@ y aviso de que las Prácticas Profesionalizantes son 100 % presenciales.
 ## Cómo usarlo (docente)
 
 1. Elegí una plantilla.
-2. Completá el formulario (solo el título es obligatorio en la mayoría).
+2. Completá el formulario: lo obligatorio está en "Lo esencial" (siempre título e imagen de portada).
 3. Mirá la previsualización a la derecha.
 4. Presioná **Copiar HTML**.
 5. En Moodle, abrí el editor TinyMCE de tu actividad/recurso.
@@ -40,14 +44,14 @@ También podés **Copiar texto**, **Descargar HTML** o **Limpiar** el formulario
 ## Requisitos
 
 - Node.js 18+ (se desarrolló con Node 26).
-- npm (o pnpm).
+- pnpm (no usar npm: el lockfile del proyecto es `pnpm-lock.yaml`).
 
 ## Ejecutar en local
 
 ```bash
 cd moodle-class-builder
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Abrí la URL que muestra Vite (por defecto `http://localhost:5173`).
@@ -55,7 +59,7 @@ Abrí la URL que muestra Vite (por defecto `http://localhost:5173`).
 ## Build (producción)
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Genera la carpeta `dist/` con el sitio estático.
@@ -63,14 +67,14 @@ Genera la carpeta `dist/` con el sitio estático.
 Para previsualizar el build:
 
 ```bash
-npm run preview
+pnpm preview
 ```
 
 ## Tests
 
 ```bash
-npm test          # ejecuta todos los tests (unit + integration)
-npm run test:watch
+pnpm test          # ejecuta todos los tests (unit + integration)
+pnpm test:watch
 ```
 
 Incluye:
@@ -87,7 +91,7 @@ Incluye:
 Lint:
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ## Despliegue
@@ -97,14 +101,14 @@ La app es 100% estática (`dist/`).
 ### Vercel
 
 - Framework: **Vite**.
-- Build command: `npm run build`.
+- Build command: `pnpm build`.
 - Output directory: `dist`.
 
 O simplemente importá el repo en Vercel (lo detecta automáticamente).
 
 ### Netlify
 
-- Build command: `npm run build`.
+- Build command: `pnpm build`.
 - Publish directory: `dist`.
 
 ### GitHub Pages

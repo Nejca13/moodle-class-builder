@@ -138,6 +138,39 @@ export function setActiveImages(images?: Record<string, string>): void {
  * except recognized [[imagen:...]] tokens, which become safe <img> tags.
  * Works on raw (unescaped) text so image URLs with query params survive.
  */
+const LINK_MARKUP = /\[([^\]\n]+)\]\(([^)\s]+)\)/g;
+const BARE_URL = /\bhttps?:\/\/[^\s<>"]*[^\s<>".,;:!?)\]]/g;
+const PLACEHOLDER = /\uE000(\d+)\uE000/g;
+
+function inlineLink(href: string, label: string): string {
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; word-break: break-word;">${escapeHtml(label)}</a>`;
+}
+
+/**
+ * Formato mínimo para docentes, sin HTML:
+ * **negrita**, *cursiva*, [texto](https://...) y direcciones web sueltas
+ * (que se convierten en enlaces). Todo el texto se escapa antes de
+ * agregar las etiquetas; los enlaces solo aceptan protocolos seguros.
+ */
+export function inlineMarkup(raw: string): string {
+  const links: string[] = [];
+  const hold = (html: string) => `\uE000${links.push(html) - 1}\uE000`;
+  let text = raw.replace(/\uE000/g, "");
+  text = text.replace(LINK_MARKUP, (match, label: string, url: string) => {
+    const href = sanitizeUrl(url);
+    return href ? hold(inlineLink(href, label)) : match;
+  });
+  text = text.replace(BARE_URL, (url) => {
+    const href = sanitizeUrl(url);
+    return href ? hold(inlineLink(href, url)) : url;
+  });
+  return escapeHtml(text)
+    .replace(/\*\*(\S(?:[^*\n]*?\S)?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*\w])\*(\S(?:[^*\n]*?\S)?)\*(?![*\w])/g, "$1<em>$2</em>")
+    .replace(/\n/g, "<br>")
+    .replace(PLACEHOLDER, (_, i: string) => links[Number(i)] ?? "");
+}
+
 function renderInline(raw: string, images?: Record<string, string>): string {
   let result = "";
   let last = 0;
@@ -145,7 +178,7 @@ function renderInline(raw: string, images?: Record<string, string>): string {
   const store = images ?? activeImages;
   IMG_TOKEN.lastIndex = 0;
   while ((m = IMG_TOKEN.exec(raw)) !== null) {
-    result += escapeHtml(raw.slice(last, m.index)).replace(/\n/g, "<br>");
+    result += inlineMarkup(raw.slice(last, m.index));
     const ref = m[1].trim();
     const resolved = (store && store[ref]) || null;
     const src = resolved ?? sanitizeImageSrc(ref);
@@ -155,7 +188,7 @@ function renderInline(raw: string, images?: Record<string, string>): string {
     }
     last = m.index + m[0].length;
   }
-  result += escapeHtml(raw.slice(last)).replace(/\n/g, "<br>");
+  result += inlineMarkup(raw.slice(last));
   return result;
 }
 

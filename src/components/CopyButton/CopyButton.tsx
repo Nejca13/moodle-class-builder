@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { copyText } from "../../utils/clipboard";
-import { Copy, FileText, Download, Eye, EyeOff, RotateCcw, Code2, Check, ChevronDown } from "lucide-react";
+import {
+  Copy,
+  FileText,
+  Download,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Code2,
+  Check,
+  ChevronDown,
+  HelpCircle,
+  MoreHorizontal,
+} from "lucide-react";
 
 interface CopyButtonProps {
   label: string;
@@ -31,9 +43,16 @@ interface ActionBarProps {
   onDownload: () => void;
   onTogglePreview: () => void;
   previewVisible: boolean;
+  /** Pide confirmación antes de borrar el formulario. */
   onClear: () => void;
+  onShowGuide: () => void;
 }
 
+/**
+ * Una sola acción principal bien visible ("Copiar para Moodle") y el resto
+ * detrás de "Más opciones" (modern-web-guidance:
+ * user-experience/content-first-noise-reduction).
+ */
 export function ActionBar({
   onCopyHtml,
   onCopyText,
@@ -41,44 +60,61 @@ export function ActionBar({
   onTogglePreview,
   previewVisible,
   onClear,
+  onShowGuide,
 }: ActionBarProps) {
+  const secondary = `${BUTTON_BASE} border border-line-strong bg-white text-ink hover:bg-paper`;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <CopyButton
-        label="Copiar HTML"
-        onClick={onCopyHtml}
-        variant="primary"
-        icon={<Copy className="size-4" aria-hidden="true" />}
-      />
-      <CopyButton
-        label="Copiar texto"
-        onClick={onCopyText}
-        variant="secondary"
-        icon={<FileText className="size-4" aria-hidden="true" />}
-      />
-      <CopyButton
-        label="Descargar HTML"
-        onClick={onDownload}
-        variant="secondary"
-        icon={<Download className="size-4" aria-hidden="true" />}
-      />
-      <button
-        type="button"
-        onClick={onTogglePreview}
-        aria-pressed={previewVisible}
-        className={`${BUTTON_BASE} border border-line-strong bg-white text-ink hover:bg-paper`}
-      >
-        {previewVisible ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
-        <span>{previewVisible ? "Ocultar previsualización" : "Previsualizar"}</span>
-      </button>
-      <button
-        type="button"
-        onClick={onClear}
-        className={`${BUTTON_BASE} ms-auto text-rose-800 hover:bg-rose-50`}
-      >
-        <RotateCcw className="size-4" aria-hidden="true" />
-        <span>Limpiar</span>
-      </button>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button
+          type="button"
+          onClick={onCopyHtml}
+          className={`${BUTTON_BASE} bg-brand-600 px-6 py-3 text-lg text-white shadow-sm hover:bg-brand-700 active:bg-brand-800`}
+        >
+          <Copy className="size-5" aria-hidden="true" />
+          <span>Copiar para Moodle</span>
+        </button>
+        <button
+          type="button"
+          onClick={onShowGuide}
+          className="inline-flex cursor-pointer items-center gap-1.5 text-base font-semibold text-brand-700 underline decoration-brand-300 underline-offset-4 hover:decoration-brand-700"
+        >
+          <HelpCircle className="size-4" aria-hidden="true" />
+          ¿Cómo lo pego en Moodle?
+        </button>
+      </div>
+
+      <details className="group rounded-xl border border-line bg-white">
+        <summary className="flex cursor-pointer items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-base font-semibold text-ink select-none hover:bg-paper">
+          <span className="flex items-center gap-2">
+            <MoreHorizontal className="size-4 text-ink-soft" aria-hidden="true" />
+            Más opciones
+          </span>
+          <ChevronDown className="size-4 text-ink-soft transition-transform group-open:rotate-180" aria-hidden="true" />
+        </summary>
+        <div className="flex flex-wrap items-center gap-2 border-t border-line p-3">
+          <button type="button" onClick={onCopyText} className={secondary}>
+            <FileText className="size-4" aria-hidden="true" />
+            <span>Copiar solo el texto</span>
+          </button>
+          <button type="button" onClick={onDownload} className={secondary}>
+            <Download className="size-4" aria-hidden="true" />
+            <span>Descargar archivo</span>
+          </button>
+          <button type="button" onClick={onTogglePreview} aria-pressed={!previewVisible} className={secondary}>
+            {previewVisible ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+            <span>{previewVisible ? "Ocultar vista previa" : "Mostrar vista previa"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onClear}
+            className={`${BUTTON_BASE} ms-auto text-rose-800 hover:bg-rose-50`}
+          >
+            <RotateCcw className="size-4" aria-hidden="true" />
+            <span>Empezar de nuevo</span>
+          </button>
+        </div>
+      </details>
     </div>
   );
 }
@@ -100,7 +136,7 @@ export function HtmlOutput({ html }: HtmlOutputProps) {
       <summary className="flex cursor-pointer items-center justify-between gap-2 px-4 py-3 text-base font-semibold text-ink select-none">
         <span className="flex items-center gap-2">
           <Code2 className="size-4 text-brand-700" aria-hidden="true" />
-          Ver código HTML generado
+          Ver el código (usuarios avanzados)
         </span>
         <ChevronDown className="size-4 text-ink-soft transition-transform group-open:rotate-180" aria-hidden="true" />
       </summary>

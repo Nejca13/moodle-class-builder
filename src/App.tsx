@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { TemplateValue, TemplateValues } from './types/template'
 import { getTemplateById, templates } from './templates'
 import {
@@ -8,17 +8,19 @@ import {
   isValidUrl,
   sanitizeImageSrc,
 } from './utils/htmlGenerator'
-import { copyText } from './utils/clipboard'
+import { copyHtml, copyText } from './utils/clipboard'
 import { downloadHtml } from './utils/download'
 import { htmlToText } from './utils/htmlToText'
 import {
   clearDraft,
   getAccent,
   getDraft,
+  getFlag,
   getImages,
   saveAccent,
   saveDraft,
   saveImages,
+  setFlag,
   type ImageStore,
 } from './utils/storage'
 import { Header } from './components/Header/Header'
@@ -29,12 +31,25 @@ import { ActionBar, HtmlOutput } from './components/CopyButton/CopyButton'
 import { HelpSection } from './components/HelpSection/HelpSection'
 import { ExamplePage } from './components/ExamplePage/ExamplePage'
 import { readRoute, routeToSearch, type Route } from './utils/route'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { getExample, hasExample } from './examples'
+import { Modal } from './components/Modal/Modal'
+import { PasteGuideDialog } from './components/PasteGuide/PasteGuideDialog'
+import { ArrowLeft, CheckCircle2, CloudCheck, Copy, Eye } from 'lucide-react'
 import { Analytics } from '@vercel/analytics/react'
 
 function emptyValues(): TemplateValues {
   return {}
 }
+
+function hasContent(values: TemplateValues): boolean {
+  return Object.values(values).some((v) =>
+    Array.isArray(v) ? v.some((i) => i.trim() !== '') : String(v ?? '').trim() !== '',
+  )
+}
+
+const HIDE_GUIDE_FLAG = 'hidePasteGuide'
+
+type ConfirmKind = 'clear' | 'example' | null
 
 function validate(
   templateId: string,
@@ -63,7 +78,10 @@ function validate(
 
     const text = getText(value).trim()
     if (field.required && !text) {
-      errors[field.id] = `${field.label} es obligatorio.`
+      errors[field.id] =
+        field.type === 'image'
+          ? 'Agregá una imagen: pegá un enlace o subí un archivo.'
+          : `${field.label} es obligatorio.`
     }
     if (text && field.type === 'url' && !isValidUrl(text)) {
       errors[field.id] = 'La URL no es válida.'
@@ -99,6 +117,22 @@ export default function App() {
   // fields after a copy/download attempt (validate after interaction).
   const [touched, setTouched] = useState<Set<string>>(() => new Set())
   const [showAllErrors, setShowAllErrors] = useState(false)
+  // Cambia en cada intento fallido de copiar: el formulario abre y enfoca el error.
+  const [focusErrorsKey, setFocusErrorsKey] = useState(0)
+  // Cambia al cargar un ejemplo o limpiar: rearma el formulario (secciones abiertas).
+  const [formKey, setFormKey] = useState(0)
+
+  const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const [guide, setGuide] = useState<{ open: boolean; justCopied: boolean }>({
+    open: false,
+    justCopied: false,
+  })
+  const [hideGuideAfterCopy, setHideGuideAfterCopy] = useState(() => getFlag(HIDE_GUIDE_FLAG))
+  const modalOpen = confirm !== null || guide.open
+  // Mantiene el texto del diálogo mientras se anima el cierre.
+  const lastConfirm = useRef<Exclude<ConfirmKind, null>>('clear')
+  if (confirm) lastConfirm.current = confirm
+  const confirmKind = confirm ?? lastConfirm.current
 
   const template = useMemo(() => getTemplateById(selectedId), [selectedId])
   const exampleTemplate =
@@ -139,6 +173,16 @@ export default function App() {
     }
   }, [selectedId, values, images])
 
+  // El aviso flotante se va solo: es informativo y el estado también se ve en pantalla.
+  useEffect(() => {
+    if (!status) return
+    const timer = window.setTimeout(() => setStatus(''), 4500)
+    return () => window.clearTimeout(timer)
+  }, [status])
+
+  const closeGuide = useCallback(() => setGuide((g) => ({ ...g, open: false })), [])
+  const closeConfirm = useCallback(() => setConfirm(null), [])
+
   const generatedHtml = useMemo(
     () => (template ? template.generateHtml(values, accent, images) : ''),
     [template, values, accent, images],
@@ -164,9 +208,42 @@ export default function App() {
   const handleClear = () => {
     if (selectedId) clearDraft(selectedId)
     setValues(emptyValues())
+    setImages({})
     setTouched(new Set())
     setShowAllErrors(false)
-    setStatus('Formulario limpiado.')
+    setFormKey((k) => k + 1)
+    setStatus('Formulario vacío. Podés empezar de nuevo.')
+  }
+
+  const requestClear = () => {
+    if (!hasContent(values)) {
+      setStatus('El formulario ya está vacío.')
+      return
+    }
+    setConfirm('clear')
+  }
+
+  const loadExample = () => {
+    if (!selectedId) return
+    const example = getExample(selectedId)
+    if (!example) return
+    setValues(structuredClone(example))
+    setTouched(new Set())
+    setShowAllErrors(false)
+    setFormKey((k) => k + 1)
+    setStatus('Se cargó el ejemplo. Reemplazá los textos por los de tu materia.')
+  }
+
+  const requestExample = () => {
+    if (hasContent(values)) setConfirm('example')
+    else loadExample()
+  }
+
+  const handleConfirm = () => {
+    const kind = confirm
+    setConfirm(null)
+    if (kind === 'clear') handleClear()
+    if (kind === 'example') loadExample()
   }
 
   const runIfValid = (action: () => void) => {
@@ -174,7 +251,8 @@ export default function App() {
     const errors = validate(template.id, values)
     if (Object.keys(errors).length > 0) {
       setShowAllErrors(true)
-      setStatus('Corregí los campos señalados antes de copiar.')
+      setFocusErrorsKey((k) => k + 1)
+      setStatus('Falta completar algo: te llevamos al campo marcado.')
       return
     }
     action()
@@ -182,9 +260,16 @@ export default function App() {
 
   const handleCopyHtml = () => {
     runIfValid(async () => {
-      const ok = await copyText(generatedHtml)
+      const ok = await copyHtml(generatedHtml)
+      if (ok && !hideGuideAfterCopy) {
+        setGuide({ open: true, justCopied: true })
+        setStatus('Contenido copiado. Ahora pegalo en Moodle.')
+        return
+      }
       setStatus(
-        ok ? 'HTML copiado correctamente.' : 'No se pudo copiar el HTML.',
+        ok
+          ? 'Contenido copiado. Pegalo en Moodle desde Herramientas → Código fuente.'
+          : 'No se pudo copiar. Probá con "Más opciones → Descargar archivo".',
       )
     })
   }
@@ -217,7 +302,7 @@ export default function App() {
       )
 
   return (
-    <div className='flex min-h-screen flex-col'>
+    <div className={`flex min-h-screen flex-col ${template && !exampleTemplate ? 'pb-24 lg:pb-0' : ''}`}>
       <Header />
 
       <main className='flex-1'>
@@ -246,6 +331,12 @@ export default function App() {
                 Plantillas <span aria-hidden='true'>/</span>{' '}
                 <strong className='font-semibold text-ink'>{template.name}</strong>
               </span>
+              {hasContent(values) && (
+                <span className='ms-auto inline-flex items-center gap-1.5 text-sm text-ink-soft'>
+                  <CloudCheck className='size-4 text-brand-700' aria-hidden='true' />
+                  Borrador guardado en este navegador
+                </span>
+              )}
             </nav>
 
             <div className='grid items-start gap-6 lg:grid-cols-12'>
@@ -254,15 +345,19 @@ export default function App() {
                 className='rounded-2xl border border-line bg-white p-5 sm:p-7 lg:col-span-6'
               >
                 <TemplateForm
+                  key={`${template.id}-${formKey}`}
                   template={template}
                   values={values}
                   errors={errors}
                   onChange={handleChange}
                   onImageAdded={handleImageAdded}
+                  onLoadExample={hasExample(template.id) ? requestExample : undefined}
+                  focusErrorsKey={focusErrorsKey}
                 />
               </section>
 
               <section
+                id='vista-previa'
                 aria-labelledby='preview-heading'
                 className='space-y-4 rounded-2xl border border-line bg-paper-deep p-5 sm:p-6 lg:sticky lg:top-4 lg:col-span-6'
               >
@@ -313,13 +408,39 @@ export default function App() {
                   onDownload={handleDownload}
                   onTogglePreview={() => setPreviewVisible((v) => !v)}
                   previewVisible={previewVisible}
-                  onClear={handleClear}
+                  onClear={requestClear}
+                  onShowGuide={() => setGuide({ open: true, justCopied: false })}
                 />
 
                 {previewVisible && <Preview html={generatedHtml} />}
 
                 <HtmlOutput html={generatedHtml} />
               </section>
+            </div>
+
+            {/* En pantallas chicas la acción principal queda siempre a mano. */}
+            <div className='fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-line bg-white/95 p-3 shadow-[0_-4px_16px_rgb(0_0_0/0.06)] backdrop-blur lg:hidden'>
+              <button
+                type='button'
+                onClick={handleCopyHtml}
+                className='inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-base font-semibold text-white hover:bg-brand-700'
+              >
+                <Copy className='size-5' aria-hidden='true' />
+                Copiar para Moodle
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  setPreviewVisible(true)
+                  document
+                    .getElementById('vista-previa')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                className='inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line-strong bg-white px-4 py-3 text-base font-semibold text-ink hover:bg-paper'
+              >
+                <Eye className='size-5' aria-hidden='true' />
+                Ver cómo queda
+              </button>
             </div>
           </div>
         )}
@@ -344,15 +465,56 @@ export default function App() {
       <div role='status' aria-live='polite' className='sr-only' style={srOnlyStyle}>
         {status}
       </div>
-      {status && (
+      {status && !modalOpen && (
         <div
-          className='fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-ink px-5 py-3 text-base font-semibold text-white shadow-lg animate-fade-in'
+          className='fixed bottom-24 left-1/2 lg:bottom-6 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-ink px-5 py-3 text-base font-semibold text-white shadow-lg animate-fade-in'
           aria-hidden='true'
         >
           <CheckCircle2 className='size-4 shrink-0 text-brand-200' aria-hidden='true' />
           <span>{status}</span>
         </div>
       )}
+      <PasteGuideDialog
+        open={guide.open}
+        justCopied={guide.justCopied}
+        hideAfterCopy={hideGuideAfterCopy}
+        onHideAfterCopyChange={(value) => {
+          setHideGuideAfterCopy(value)
+          setFlag(HIDE_GUIDE_FLAG, value)
+        }}
+        onClose={closeGuide}
+      />
+
+      <Modal
+        open={confirm !== null}
+        onClose={closeConfirm}
+        title={confirmKind === 'example' ? '¿Reemplazar lo que escribiste?' : '¿Borrar todo el formulario?'}
+        description={
+          confirmKind === 'example'
+            ? 'El ejemplo va a reemplazar todo lo que completaste en esta plantilla. No se puede deshacer.'
+            : 'Se borra todo lo que completaste en esta plantilla, incluidas las imágenes. No se puede deshacer.'
+        }
+        footer={
+          <>
+            <button
+              type='button'
+              autoFocus
+              onClick={closeConfirm}
+              className='inline-flex cursor-pointer items-center justify-center rounded-xl border border-line-strong bg-white px-4 py-2.5 text-base font-semibold text-ink hover:bg-paper'
+            >
+              Cancelar
+            </button>
+            <button
+              type='button'
+              onClick={handleConfirm}
+              className='inline-flex cursor-pointer items-center justify-center rounded-xl bg-rose-700 px-4 py-2.5 text-base font-semibold text-white hover:bg-rose-800'
+            >
+              {confirmKind === 'example' ? 'Sí, cargar el ejemplo' : 'Sí, borrar todo'}
+            </button>
+          </>
+        }
+      />
+
       <Analytics />
     </div>
   )

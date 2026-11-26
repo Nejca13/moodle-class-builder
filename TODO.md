@@ -11,10 +11,10 @@ Este archivo es para retomar rápido desde otra PC.
 - [x] Tests de integración (App.test.tsx)
 - [x] 3 plantillas funcionales
 - [x] Ejemplos de HTML generado (tests/moodle/*.html)
-- [x] TypeScript sin errores (`npm run build`)
+- [x] TypeScript sin errores (`pnpm build`)
 - [x] Build exitoso
 - [x] Tests exitosos (45/45)
-- [x] Lint exitoso (`npm run lint`)
+- [x] Lint exitoso (`pnpm lint`)
 - [x] HTML generado limpio y autocontenido
 - [x] Arquitectura extensible (registry de plantillas)
 - [ ] E2E con Playwright (opcional, NO incluido; se eligió Vitest unit+integration)
@@ -22,12 +22,12 @@ Este archivo es para retomar rápido desde otra PC.
 ## Comandos rápidos
 
 ```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run build    # tsc --noEmit + vite build -> dist/
-npm run preview  # previsualizar el build
-npm test         # vitest run
-npm run lint     # eslint .
+pnpm install
+pnpm dev      # http://localhost:5173
+pnpm build    # tsc --noEmit + vite build -> dist/
+pnpm preview  # previsualizar el build
+pnpm test         # vitest run
+pnpm lint     # eslint .
 ```
 
 ## Trabajo ya hecho (no repetir)

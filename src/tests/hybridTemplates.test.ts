@@ -155,7 +155,7 @@ describe("marco de educación híbrida en las plantillas", () => {
     for (const t of templates) {
       const values = getExample(t.id, PRODUCTION_BASE)!;
       // Las fotos están en el repo (public/ejemplos) y se sirven desde el propio sitio.
-      expect(String(values.portada), t.id).toMatch(/^https:\/\/moodle-class-builder\.vercel\.app\/ejemplos\/[a-z-]+\.jpg$/);
+      expect(String(values.portada), t.id).toMatch(/^https:\/\/plantillas\.ceaer\.edu\.ar\/ejemplos\/[a-z-]+\.jpg$/);
       expect(t.generateHtml(values, EXAMPLE_ACCENTS[t.id]), t.id).toContain(EXAMPLE_ACCENTS[t.id]);
     }
   });

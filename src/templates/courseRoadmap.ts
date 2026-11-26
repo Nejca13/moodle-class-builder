@@ -12,6 +12,7 @@ import {
   setActiveImages,
 } from "../utils/htmlGenerator";
 import { AI_LEVELS, PEDAGOGICAL_FORMATS, renderAiBlock, renderPPWarning } from "./hybrid";
+import { CEAER_COVER } from "../content/brand";
 
 /**
  * Bloque de bienvenida e inicio del aula: hoja de ruta, canales de
@@ -26,7 +27,7 @@ export const courseRoadmap: TemplateDefinition = {
   scenarios: ["cursada"],
   fields: [
     { id: "title", label: "Título", type: "text", required: true, placeholder: "Ej: Programación en Python — 1.er año" },
-    { id: "portada", label: "Imagen de portada", type: "image", help: "URL de una imagen o subí un archivo desde tu dispositivo." },
+    { id: "portada", label: "Imagen de portada", type: "image", required: true, suggestedImage: CEAER_COVER, help: "Pegá el enlace de una imagen (lo más liviano) o subí un archivo desde tu dispositivo: lo achicamos para que pese poco." },
     { id: "teachers", label: "Docente/s", type: "text", placeholder: "Ej: Prof. Ana Pérez" },
     {
       id: "pedagogicalFormat",
@@ -94,6 +95,13 @@ export const courseRoadmap: TemplateDefinition = {
       type: "textarea",
       placeholder: "Ej: si necesitás un ajuste razonable o tenés problemas de conectividad, escribinos por...",
     },
+  ],
+  sections: [
+    { id: "esencial", title: "Lo esencial", description: "Con esto ya podés publicar la bienvenida.", fields: ["title", "portada", "teachers", "welcome", "purpose"] },
+    { id: "cursada", title: "Cómo se cursa", description: "Formato, escenarios, hoja de ruta, asistencia y comunicación.", fields: ["pedagogicalFormat", "scenarios", "itinerary", "attendance", "communication"] },
+    { id: "aprendizaje", title: "Qué se aprende y cómo se evalúa", description: "Capacidades y criterios de acreditación.", fields: ["capacities", "evaluation"] },
+    { id: "herramientas", title: "Herramientas e inteligencia artificial", description: "Qué se usa en la materia y las reglas sobre IA.", fields: ["tools", "aiLevel", "aiContract"] },
+    { id: "ayuda", title: "Ayuda y accesibilidad", description: "A quién recurrir y qué apoyos hay.", fields: ["support"] },
   ],
   generateHtml(values, accent, images) {
     setActiveImages(images);

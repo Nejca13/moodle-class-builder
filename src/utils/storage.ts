@@ -86,3 +86,23 @@ export function clearDraft(templateId: string): void {
     // ignore
   }
 }
+
+const FLAG_PREFIX = "mcb:flag:";
+
+/** Preferencias simples del docente (por ejemplo, no volver a mostrar una guía). */
+export function getFlag(name: string): boolean {
+  try {
+    return localStorage.getItem(FLAG_PREFIX + name) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setFlag(name: string, value: boolean): void {
+  try {
+    if (value) localStorage.setItem(FLAG_PREFIX + name, "1");
+    else localStorage.removeItem(FLAG_PREFIX + name);
+  } catch {
+    // ignore
+  }
+}

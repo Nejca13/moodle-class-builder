@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildList,
   escapeHtml,
+  inlineMarkup,
   formatText,
   getList,
   getText,
@@ -150,5 +151,32 @@ describe("validateGeneratedHtml", () => {
     const r = validateGeneratedHtml(bad);
     expect(r.valid).toBe(false);
     expect(r.errors.join()).toContain("data:");
+  });
+});
+
+describe("inlineMarkup (formato del docente)", () => {
+  it("convierte negrita y cursiva", () => {
+    expect(inlineMarkup("Es **muy** importante y *breve*.")).toBe(
+      "Es <strong>muy</strong> importante y <em>breve</em>.",
+    );
+  });
+
+  it("no confunde asteriscos sueltos con cursiva", () => {
+    expect(inlineMarkup("2 * 3 * 4 = 24")).toBe("2 * 3 * 4 = 24");
+  });
+
+  it("crea enlaces con [texto](url) y con direcciones sueltas", () => {
+    const html = inlineMarkup("Mirá [la guía](https://ejemplo.com/a?x=1&y=2) o https://moodle.org.");
+    expect(html).toContain('<a href="https://ejemplo.com/a?x=1&amp;y=2"');
+    expect(html).toContain(">la guía</a>");
+    expect(html).toContain('<a href="https://moodle.org"');
+    expect(html.endsWith("</a>.")).toBe(true);
+  });
+
+  it("no acepta enlaces inseguros ni deja pasar HTML", () => {
+    const html = inlineMarkup('[clic](javascript:alert(1)) <b onclick="x">hola</b>');
+    expect(html).not.toContain("<a ");
+    expect(html).toContain("&lt;b onclick=");
+    expect(validateGeneratedHtml(`<p>${html}</p>`).valid).toBe(true);
   });
 });

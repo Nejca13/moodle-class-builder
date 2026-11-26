@@ -31,3 +31,22 @@ try {
   (globalThis as unknown as { localStorage: typeof localStorageMock }).localStorage =
     localStorageMock;
 }
+
+// jsdom no implementa showModal()/close() de <dialog>: alcanza con abrir y
+// cerrar el elemento y disparar "close" como hace el navegador.
+if (typeof HTMLDialogElement !== "undefined" && !HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+  };
+  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement, value?: string) {
+    if (!this.hasAttribute("open")) return;
+    if (value !== undefined) this.returnValue = value;
+    this.removeAttribute("open");
+    this.dispatchEvent(new Event("close"));
+  };
+}
+
+// jsdom tampoco implementa scrollIntoView.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = function scrollIntoView() {};
+}

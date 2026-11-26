@@ -1,8 +1,8 @@
 import type { TemplateValues } from "../types/template";
 import { AI_LEVELS } from "../templates/hybrid";
 
-/** Dominio de producción: base de las fotos en el HTML de ejemplo para Moodle. */
-export const PRODUCTION_BASE = "https://moodle-class-builder.vercel.app/";
+import { PRODUCTION_BASE } from "../content/brand";
+export { PRODUCTION_BASE };
 
 /**
  * Fotos de Wikimedia Commons en dominio público o CC0, copiadas al repo en
