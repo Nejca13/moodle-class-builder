@@ -76,7 +76,12 @@ export function PasteGuideDialog({
           </li>
         ))}
       </ol>
-      <p className="mt-5 rounded-xl bg-paper p-4 text-sm text-ink-soft">
+      <p className="mt-5 text-sm text-ink-soft">
+        <strong className="text-ink">¿Querés cambiarla más adelante?</strong> En la pantalla de inicio usá
+        "Editar una clase ya publicada" y pegá el código que está en Moodle. Hacé los cambios en el
+        Gestor y no en el editor de Moodle: lo que se cambia en Moodle no queda guardado para la próxima vez.
+      </p>
+      <p className="mt-3 rounded-xl bg-paper p-4 text-sm text-ink-soft">
         <strong className="text-ink">Atajo para probar:</strong> también podés pegar directo en el
         editor, sin abrir "Código fuente". Algunos Moodle quitan colores y estilos al pegar así: si
         no se ve igual que en la vista previa, deshacé (Ctrl+Z) y usá "Código fuente".

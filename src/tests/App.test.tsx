@@ -3,6 +3,10 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
 import { copyHtml } from "../utils/clipboard";
+import { embedFormData } from "../utils/embed";
+import { getTemplateById } from "../templates";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 vi.mock("../utils/clipboard", () => ({
   copyText: vi.fn().mockResolvedValue(true),
@@ -103,6 +107,100 @@ describe("App integration", () => {
 
     expect(coverInput()).toHaveValue("https://plantillas.ceaer.edu.ar/portada-ceaer.jpg");
     expect(screen.queryByRole("button", { name: /Usar la portada del CEAER/i })).not.toBeInTheDocument();
+  });
+
+  it("embeds the form data in the copied HTML", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Clase teórica/i }));
+    await user.type(screen.getByLabelText(/Título/i), "Mi clase");
+    await user.type(coverInput(), "https://example.com/portada.jpg");
+    await user.click(screen.getAllByRole("button", { name: /^Copiar para Moodle$/i })[0]);
+
+    expect(vi.mocked(copyHtml).mock.calls[0][0]).toMatch(/<!-- gestor-de-clases:v1 /);
+  });
+
+  it("reopens a published class from its HTML to edit it", async () => {
+    const values = { title: "Clase publicada", portada: "https://example.com/p.jpg", objectives: ["Repasar"] };
+    const html = embedFormData(getTemplateById("theoretical-class")!.generateHtml(values, "#6a4a8c"), {
+      templateId: "theoretical-class",
+      accent: "#6a4a8c",
+      values,
+      images: {},
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Editar una clase ya publicada/i }));
+    const dialog = screen.getByRole("dialog", { name: /Editar una clase ya publicada/i });
+    await user.click(within(dialog).getByLabelText(/Código de la clase/i));
+    await user.paste(html);
+    await user.click(within(dialog).getByRole("button", { name: /Abrir para editar/i }));
+
+    expect(window.location.search).toBe("?plantilla=theoretical-class");
+    expect(screen.getByLabelText(/Título/i)).toHaveValue("Clase publicada");
+    expect(localStorage.getItem("mcb:accent:theoretical-class")).toBe("#6a4a8c");
+  });
+
+  it("warns about changes made directly in Moodle and lists them in the editor", async () => {
+    const html = readFileSync(resolve(__dirname, "../../tests/moodle/moodle-guardado.html"), "utf8");
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Editar una clase ya publicada/i }));
+    const dialog = screen.getByRole("dialog", { name: /Editar una clase ya publicada/i });
+    await user.click(within(dialog).getByLabelText(/Código de la clase/i));
+    await user.paste(html);
+    await user.click(within(dialog).getByRole("button", { name: /Abrir para editar/i }));
+
+    const warning = within(dialog).getByRole("alert");
+    expect(warning).toHaveTextContent(/cambios hechos directamente en Moodle/i);
+    expect(warning).toHaveTextContent("Gatitos #1 — Casdasdasd");
+    await user.click(within(dialog).getByRole("button", { name: /^Abrir igual$/i }));
+
+    expect(screen.getByLabelText(/Título/i)).toHaveValue("Gatitos #1 — Cuidado felino básico");
+    const banner = screen.getByRole("region", { name: /Cambios hechos en Moodle/i });
+    expect(banner).toHaveTextContent("Ayuda y accesibilidada asdasdasd");
+    await user.click(within(banner).getByRole("button", { name: /ya los rehice/i }));
+    expect(screen.queryByRole("region", { name: /Cambios hechos en Moodle/i })).not.toBeInTheDocument();
+  });
+
+  it("explains why an old class cannot be reopened", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Editar una clase ya publicada/i }));
+    const dialog = screen.getByRole("dialog", { name: /Editar una clase ya publicada/i });
+    const code = within(dialog).getByLabelText(/Código de la clase/i);
+    await user.click(code);
+    await user.paste("<p>Clase hecha a mano</p>");
+    await user.click(within(dialog).getByRole("button", { name: /Abrir para editar/i }));
+
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(/no tiene los datos del Gestor/i);
+    expect(code).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("asks before replacing an existing draft when reopening a class", async () => {
+    localStorage.setItem("mcb:draft:theoretical-class", JSON.stringify({ title: "Borrador previo" }));
+    const values = { title: "Clase publicada" };
+    const html = embedFormData(getTemplateById("theoretical-class")!.generateHtml(values), {
+      templateId: "theoretical-class",
+      values,
+      images: {},
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /Editar una clase ya publicada/i }));
+    const dialog = screen.getByRole("dialog", { name: /Editar una clase ya publicada/i });
+    await user.click(within(dialog).getByLabelText(/Código de la clase/i));
+    await user.paste(html);
+    await user.click(within(dialog).getByRole("button", { name: /Abrir para editar/i }));
+
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(/Ya tenés un borrador/i);
+    await user.click(within(dialog).getByRole("button", { name: /Reemplazar el borrador y abrir/i }));
+    expect(screen.getByLabelText(/Título/i)).toHaveValue("Clase publicada");
   });
 
   it("does not show required errors before the teacher interacts", async () => {

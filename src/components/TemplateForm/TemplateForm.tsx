@@ -122,7 +122,7 @@ export function TemplateForm({
             <TemplateIcon icon={template.icon} className="size-6" />
           </div>
           <div>
-            <h2 id="form-heading" className="text-2xl font-bold text-ink">
+            <h2 id="form-heading" tabIndex={-1} className="text-2xl font-bold text-ink focus:outline-none">
               {template.name}
             </h2>
             <p className="text-base text-ink-soft">{template.description}</p>

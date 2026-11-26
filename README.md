@@ -39,7 +39,16 @@ y aviso de que las Prácticas Profesionalizantes son 100 % presenciales.
 6. Abrí **Código fuente** (icono `<>` o menú).
 7. Pegá el HTML y guardá.
 
-También podés **Copiar texto**, **Descargar HTML** o **Limpiar** el formulario.
+En "Más opciones" podés copiar solo el texto, descargar el archivo o empezar de nuevo.
+
+### Volver a editar una clase publicada
+
+Cada HTML generado termina con un comentario invisible
+`<!-- gestor-de-clases:v1 (...):BASE64 -->` que guarda los datos del formulario
+(plantilla, color y campos; las imágenes incrustadas no se duplican, se
+recuperan del propio HTML). En la pantalla de inicio, **Editar una clase ya
+publicada** acepta el código copiado desde "Código fuente" de Moodle o el
+archivo descargado. Ver `src/utils/embed.ts`.
 
 ## Requisitos
 

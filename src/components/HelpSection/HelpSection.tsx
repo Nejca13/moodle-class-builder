@@ -34,7 +34,14 @@ export function HelpSection() {
             ))}
           </ol>
 
-          <p className="mt-6 rounded-xl bg-brand-50 p-4 text-base text-brand-900">
+          <p className="mt-6 rounded-xl bg-paper p-4 text-base text-ink">
+            <strong>¿Querés cambiar una clase ya publicada?</strong> En Moodle abrí "Código fuente",
+            copiá todo y usá "Editar una clase ya publicada" en la pantalla de inicio. El código
+            termina con un comentario <code>gestor-de-clases</code>: no lo borres, ahí están los datos
+            del formulario. Conviene hacer los cambios siempre en el Gestor: lo que se edita directo en
+            Moodle no queda en esos datos.
+          </p>
+          <p className="mt-3 rounded-xl bg-brand-50 p-4 text-base text-brand-900">
             <strong>Tip:</strong> el HTML generado ya trae todos los estilos. Al pegarlo en{" "}
             <em>Herramientas → Código fuente</em>, Moodle respeta el diseño y los colores sin
             plugins adicionales.
